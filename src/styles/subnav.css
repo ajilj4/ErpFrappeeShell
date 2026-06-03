@@ -1,0 +1,232 @@
+/* ═══════════════════════════════════════════════════════════════════
+   subnav.css
+   AxonAI One — Contextual Vertical Sub-Navigation Panel
+   ═══════════════════════════════════════════════════════════════════ */
+
+.ax-subnav {
+  position: fixed;
+  top: 0;
+  left: var(--ax-sidebar-width);
+  width: var(--ax-subnav-width);
+  height: 100vh;
+  background: #FFFFFF;
+  border-right: 1px solid var(--ax-border);
+  z-index: 1005;
+  /* Sits behind primary sidebar (z-index 1010) */
+  transition: left var(--ax-transition), width var(--ax-transition);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+body.ax-sidebar-collapsed .ax-subnav {
+  left: var(--ax-sidebar-collapsed);
+}
+
+/* Hide when empty container or empty React rendering */
+#axonai-subnav-root:empty {
+  display: none !important;
+}
+
+/* ── Header ────────────────────────────────────────────────────────── */
+.ax-subnav-header {
+  height: var(--ax-topbar-height);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--ax-border);
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+
+.ax-subnav-module-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ax-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── Scrollable Body ───────────────────────────────────────────────── */
+.ax-subnav-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ax-subnav-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ax-subnav-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ax-subnav-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 4px;
+}
+
+.ax-subnav-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* ── Groups ────────────────────────────────────────────────────────── */
+.ax-subnav-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.ax-subnav-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  border-radius: var(--ax-radius-md);
+  transition: background var(--ax-transition);
+}
+
+.ax-subnav-group-header:hover {
+  background: #F3F4F6;
+}
+
+.ax-subnav-group-title {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ax-text-secondary);
+}
+
+.ax-subnav-group-chevron {
+  display: flex;
+  align-items: center;
+  color: var(--ax-text-placeholder);
+}
+
+/* ── Items List ────────────────────────────────────────────────────── */
+.ax-subnav-items {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ax-subnav-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ax-text-secondary) !important;
+  text-decoration: none !important;
+  border-radius: var(--ax-radius-md);
+  transition: background var(--ax-transition), color var(--ax-transition);
+  cursor: pointer;
+}
+
+.ax-subnav-item:hover {
+  background: #F9FAFB;
+  color: var(--ax-text-primary) !important;
+}
+
+.ax-subnav-item--active {
+  background: var(--ax-primary-light) !important;
+  color: var(--ax-primary) !important;
+  font-weight: 600;
+}
+
+.ax-subnav-item-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ax-text-placeholder);
+  transition: background var(--ax-transition), transform var(--ax-transition);
+  flex-shrink: 0;
+}
+
+.ax-subnav-item--active .ax-subnav-item-dot {
+  background: var(--ax-primary);
+  transform: scale(1.2);
+}
+
+.ax-subnav-item:hover .ax-subnav-item-dot {
+  background: var(--ax-text-secondary);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE SUBNAV (TABLET & MOBILE)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Tablet Overrides (< 1024px) ─────────────────────────────────── */
+@media (max-width: 1024px) {
+  .ax-subnav {
+    left: var(--ax-sidebar-collapsed) !important;
+  }
+
+  .ax-subnav-back-btn {
+    display: none !important;
+    visibility: hidden !important;
+    /* Hide back button on tablet/desktop */
+    border: none !important;
+  }
+}
+
+/* ── Mobile Overrides (< 768px) ──────────────────────────────────── */
+@media (max-width: 768px) {
+  .ax-subnav {
+    position: fixed !important;
+    top: 0 !important;
+    left: -100% !important;
+    /* Hide offscreen by default on mobile */
+    width: var(--ax-sidebar-width) !important;
+    /* Take same width as mobile drawer */
+    height: 100vh !important;
+    z-index: 1011 !important;
+    /* Sit slightly above primary sidebar (1010) */
+    transition: left 250ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  /* When mobile menu is open, show the active SubNav by default */
+  body.ax-mobile-sidebar-open.ax-has-subnav .ax-subnav {
+    left: 0 !important;
+  }
+
+  /* If the user clicked "Back to Modules" in the subnav, hide the subnav */
+  body.ax-mobile-sidebar-open.ax-has-subnav.ax-mobile-subnav-hidden .ax-subnav {
+    left: -100% !important;
+  }
+
+  /* Style the mobile back button */
+  .ax-subnav-back-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: var(--ax-text-secondary);
+    cursor: pointer;
+    padding: 6px;
+    margin-right: 8px;
+    border-radius: var(--ax-radius-md);
+    transition: background var(--ax-transition), color var(--ax-transition);
+  }
+
+  .ax-subnav-back-btn:hover {
+    background: #F3F4F6;
+    color: var(--ax-text-primary);
+  }
+}

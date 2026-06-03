@@ -1,0 +1,87 @@
+/* ═══════════════════════════════════════════════════════════════════
+   keyboard.css
+   AxonAI One — Fixed Bottom F-Key Shortcut Bar
+   Industrial ref: ERPNext keyboard bar, SAP launchpad shortcut strip.
+   ═══════════════════════════════════════════════════════════════════ */
+
+#axonai-keybar-root {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1020; /* above everything else */
+  width: 100%;
+}
+
+.ax-keybar {
+  display: flex;
+  align-items: stretch;
+  height: var(--ax-keyboard-height);
+  background: #1A2040;   /* very dark navy — matches the reference screenshot */
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* ── Individual F-Key Button ────────────────────────────────────── */
+.ax-keybar-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background: none;
+  cursor: pointer;
+  padding: 0 6px;
+  min-width: 0;
+  white-space: nowrap;
+  transition: background var(--ax-transition);
+  font-family: 'Inter', sans-serif;
+}
+
+.ax-keybar-btn:last-child {
+  border-right: none;
+}
+
+.ax-keybar-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.ax-keybar-btn:active {
+  background: rgba(79, 70, 229, 0.35);
+}
+
+/* F-key label (e.g. "F1") */
+.ax-keybar-fkey {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.40);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+/* Action label (e.g. "Help", "Payment") */
+.ax-keybar-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.80);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Responsive: hide text labels on very small screens */
+@media (max-width: 900px) {
+  .ax-keybar-label {
+    display: none;
+  }
+  .ax-keybar-fkey {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+}

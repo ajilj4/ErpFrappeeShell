@@ -1,0 +1,88 @@
+/* ═══════════════════════════════════════════════════════════════════
+   modulenav.css
+   AxonAI One — Horizontal Module Tab Bar
+   ═══════════════════════════════════════════════════════════════════ */
+
+.ax-module-nav {
+  height: var(--ax-modulenav-height);
+  background: #FFFFFF;
+  border-bottom: 1px solid var(--ax-border);
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.ax-module-nav-inner {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  padding: 0 16px;
+  gap: 2px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none; /* Firefox */
+}
+
+.ax-module-nav-inner::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Individual Tab ────────────────────────────────────────────────── */
+.ax-module-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ax-text-secondary);
+  text-decoration: none !important;
+  border: none;
+  background: none;
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  border-radius: var(--ax-radius-sm) var(--ax-radius-sm) 0 0;
+  transition: color var(--ax-transition), background var(--ax-transition);
+  /* Stretch to fill full height so indicator sits at bottom */
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.ax-module-tab:hover {
+  color: var(--ax-text-primary);
+  background: #F9FAFB;
+}
+
+.ax-module-tab--active {
+  color: var(--ax-primary) !important;
+  font-weight: 600;
+  background: var(--ax-primary-light);
+}
+
+/* Sliding bottom indicator */
+.ax-module-tab-indicator {
+  position: absolute;
+  bottom: 0;
+  left: 8px;
+  right: 8px;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--ax-primary);
+}
+
+.ax-module-tab-icon {
+  display: flex;
+  align-items: center;
+  opacity: 0.7;
+}
+
+.ax-module-tab--active .ax-module-tab-icon {
+  opacity: 1;
+  color: var(--ax-primary);
+}
+
+.ax-module-tab-label {
+  letter-spacing: -0.01em;
+}

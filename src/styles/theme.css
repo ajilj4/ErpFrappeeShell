@@ -1,0 +1,169 @@
+/* ═══════════════════════════════════════════════════════════════════
+   theme.css
+   AxonAI One — Global Design Tokens + Layout Overrides for Frappe v15
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* 1. Google Fonts — Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ── Override Frappe font globally ────────────────────────────────── */
+body, .desk-body, .frappe-app, .navbar,
+input, select, textarea, button, .form-control {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FRAPPE v15 LAYOUT CORRECTIONS
+   
+   Frappe v15 DOM (inside <body>):
+     div.main-section
+       header                     ← Frappe navbar (48px)
+       div#body
+         div.page-container
+           div.page-body
+             div.layout-main.row
+               div.col-lg-2.layout-side-section  ← HIDE THIS
+               div.col.layout-main-section-wrapper ← Main content
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── STEP 1: Prevent horizontal overflow on body ──────────────────── */
+html, body {
+  overflow-x: hidden !important;
+}
+
+/* ── STEP 2: Completely hide Frappe's built-in sidebar ────────────── */
+/* This column would cause content to overflow when our sidebar adds 260px */
+.layout-side-section {
+  display: none !important;
+  width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  flex: 0 !important;
+  max-width: 0 !important;
+  overflow: hidden !important;
+}
+
+/* ── STEP 3: Shift entire desk content to the right of our sidebar ── */
+/* Frappe v15 structure: body > div.main-section contains everything  */
+div.main-section {
+  margin-left: var(--ax-sidebar-width) !important;
+  transition: margin-left var(--ax-transition-slow), width var(--ax-transition-slow);
+  width: calc(100vw - var(--ax-sidebar-width)) !important;
+  min-width: 0 !important;
+}
+
+body.ax-sidebar-collapsed div.main-section {
+  margin-left: var(--ax-sidebar-collapsed) !important;
+  width: calc(100vw - var(--ax-sidebar-collapsed)) !important;
+}
+
+/* ── Shift for SubNav ─────────────────────────────────────────────── */
+/* Default sidebar + SubNav */
+body.ax-has-subnav div.main-section {
+  margin-left: calc(var(--ax-sidebar-width) + var(--ax-subnav-width)) !important;
+  width: calc(100vw - var(--ax-sidebar-width) - var(--ax-subnav-width)) !important;
+}
+
+/* Collapsed sidebar + SubNav */
+body.ax-sidebar-collapsed.ax-has-subnav div.main-section {
+  margin-left: calc(var(--ax-sidebar-collapsed) + var(--ax-subnav-width)) !important;
+  width: calc(100vw - var(--ax-sidebar-collapsed) - var(--ax-subnav-width)) !important;
+}
+
+/* ── STEP 4: Let layout-main-section-wrapper take full width ──────── */
+/* Since layout-side-section is hidden, the wrapper should fill the row */
+.layout-main .layout-main-section-wrapper {
+  flex: 1 1 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+/* ── STEP 5: Prevent row from overflowing due to Bootstrap gutters ── */
+.layout-main.row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  overflow-x: hidden !important;
+}
+
+/* ── STEP 6: Page background ──────────────────────────────────────── */
+body {
+  background-color: var(--ax-page-bg) !important;
+}
+
+.page-container {
+  background-color: var(--ax-page-bg) !important;
+}
+
+/* ── STEP 7: Hide Frappe's default navbar ────────────────────────── */
+body > div.main-section > header.navbar {
+  display: none !important;
+}
+
+/* ── STEP 8: Smooth scrollbar ─────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); }
+
+/* ── STEP 9: Keyboard bar bottom padding ─────────────────────────── */
+/* Prevents page content from being hidden behind the fixed bottom bar */
+.page-container,
+#body {
+  padding-bottom: var(--ax-keyboard-height) !important;
+}
+
+/* ── CSS transition slow variable fallback ───────────────────────── */
+:root {
+  --ax-transition-slow: 300ms ease;
+  --ax-sidebar-border: rgba(255, 255, 255, 0.08);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE LAYOUT OVERRIDES (TABLET & MOBILE)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Tablet Viewport (768px to 1024px) ────────────────────────────── */
+@media (max-width: 1024px) {
+  :root {
+    /* Collapse sidebar to 64px automatically by default on tablet */
+    --ax-sidebar-width: var(--ax-sidebar-collapsed) !important;
+  }
+  
+  /* Force main section shifts for automatic tablet collapse */
+  body div.main-section {
+    margin-left: var(--ax-sidebar-collapsed) !important;
+    width: calc(100vw - var(--ax-sidebar-collapsed)) !important;
+  }
+  
+  body.ax-has-subnav div.main-section {
+    margin-left: calc(var(--ax-sidebar-collapsed) + var(--ax-subnav-width)) !important;
+    width: calc(100vw - var(--ax-sidebar-collapsed) - var(--ax-subnav-width)) !important;
+  }
+}
+
+/* ── Mobile Viewport (< 768px) ────────────────────────────────────── */
+@media (max-width: 768px) {
+  :root {
+    --ax-sidebar-width: 220px !important; /* Restore normal width for sliding mobile drawer */
+  }
+
+  /* Reset main section to take 100% viewport width and hide sidebar margins */
+  div.main-section,
+  body div.main-section,
+  body.ax-has-subnav div.main-section {
+    margin-left: 0 !important;
+    width: 100vw !important;
+  }
+
+  /* Hide Keyboard shortcut bar on mobile */
+  #axonai-keybar-root {
+    display: none !important;
+  }
+
+  .page-container,
+  #body {
+    padding-bottom: 0 !important;
+  }
+}
+

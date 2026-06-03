@@ -1,0 +1,429 @@
+/* ═══════════════════════════════════════════════════════════════════
+   sidebar.css
+   AxonAI One — Sidebar Component Styles
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Sidebar Container ──────────────────────────────────────────── */
+#ax-sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: var(--ax-sidebar-width);
+  height: 100vh;
+  background: var(--ax-sidebar-bg);
+  display: flex;
+  flex-direction: column;
+  z-index: 1010;
+  transition: width var(--ax-transition-slow);
+  overflow: hidden;
+  box-shadow: 4px 0 16px rgba(0, 0, 0, 0.18);
+  user-select: none;
+}
+
+/* ── Collapsed State ─────────────────────────────────────────────── */
+body.ax-sidebar-collapsed #ax-sidebar {
+  width: var(--ax-sidebar-collapsed);
+}
+
+body.ax-sidebar-collapsed .ax-logo-name,
+body.ax-sidebar-collapsed .ax-nav-label,
+body.ax-sidebar-collapsed .ax-user-info,
+body.ax-sidebar-collapsed .ax-section-label {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* ── Logo / Brand Row ────────────────────────────────────────────── */
+.ax-sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  height: var(--ax-topbar-height);
+  border-bottom: 1px solid var(--ax-sidebar-border);
+  flex-shrink: 0;
+}
+
+.ax-logo-icon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #6366F1 0%, #4F46E5 50%, #3730A3 100%);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.4);
+}
+
+.ax-logo-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.ax-logo-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  flex: 1;
+  transition: opacity var(--ax-transition), width var(--ax-transition);
+}
+
+.ax-logo-subtitle {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-top: 1px;
+}
+
+.ax-collapse-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ax-sidebar-text);
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  border-radius: var(--ax-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--ax-transition), color var(--ax-transition), transform var(--ax-transition);
+  flex-shrink: 0;
+}
+
+.ax-collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #FFFFFF;
+  transform: scale(1.1);
+}
+
+.ax-collapse-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* ── Navigation List ─────────────────────────────────────────────── */
+.ax-sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  scrollbar-width: none;
+  gap: 1px;
+}
+
+.ax-sidebar-nav::-webkit-scrollbar {
+  width: 3px;
+}
+
+.ax-sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ax-sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+}
+
+/* ── Nav Item ────────────────────────────────────────────────────── */
+.ax-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: var(--ax-radius-md);
+  text-decoration: none !important;
+  color: var(--ax-sidebar-text) !important;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  position: relative;
+  transition: background var(--ax-transition), color var(--ax-transition), transform 150ms ease;
+  letter-spacing: -0.005em;
+}
+
+.ax-nav-item:hover {
+  background: var(--ax-sidebar-hover);
+  color: #FFFFFF !important;
+  transform: translateX(2px);
+}
+
+.ax-nav-item:hover .ax-nav-icon {
+  color: #FFFFFF;
+}
+
+.ax-nav-item.ax-nav-active {
+  background: var(--ax-sidebar-active-bg);
+  color: #FFFFFF !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.35);
+}
+
+.ax-nav-item.ax-nav-active .ax-nav-icon {
+  color: #FFFFFF;
+}
+
+/* Active indicator line */
+.ax-nav-item.ax-nav-active::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: #fff;
+  border-radius: 0 2px 2px 0;
+  opacity: 0.6;
+}
+
+/* ── Nav Icon ────────────────────────────────────────────────────── */
+.ax-nav-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ax-sidebar-text);
+  transition: color var(--ax-transition);
+}
+
+.ax-nav-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* ── Nav Label ───────────────────────────────────────────────────── */
+.ax-nav-label {
+  flex: 1;
+  transition: opacity var(--ax-transition), width var(--ax-transition);
+}
+
+/* ── Section Divider ─────────────────────────────────────────────── */
+.ax-sidebar-divider {
+  height: 1px;
+  background: var(--ax-sidebar-border);
+  margin: 8px 10px;
+}
+
+/* ── Section Label ───────────────────────────────────────────────── */
+.ax-section-label {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.3);
+  padding: 6px 10px 4px;
+  white-space: nowrap;
+  transition: opacity var(--ax-transition);
+}
+
+/* ── Tooltip for collapsed mode ──────────────────────────────────── */
+body.ax-sidebar-collapsed .ax-nav-item[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  left: calc(var(--ax-sidebar-collapsed) + 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  background: #1E293B;
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: var(--ax-radius-md);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1020;
+  box-shadow: var(--ax-shadow-md);
+}
+
+/* ── Sidebar Footer ──────────────────────────────────────────────── */
+.ax-sidebar-footer {
+  padding: 8px;
+  border-top: 1px solid var(--ax-sidebar-border);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ax-footer-help {
+  margin-bottom: 2px;
+}
+
+/* ── User Row ────────────────────────────────────────────────────── */
+.ax-user-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: var(--ax-radius-md);
+  cursor: pointer;
+  transition: background var(--ax-transition);
+}
+
+.ax-user-row:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ax-user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366F1, #4F46E5);
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.35);
+  letter-spacing: -0.02em;
+}
+
+.ax-user-info {
+  display: flex;
+  flex-direction: column;
+  transition: opacity var(--ax-transition);
+  overflow: hidden;
+  min-width: 0;
+}
+
+.ax-user-name {
+  color: #FFFFFF;
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ax-user-status {
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 10.5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 1px;
+}
+
+.ax-online-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10B981;
+  display: inline-block;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+  animation: ax-pulse 2s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   RESPONSIVE SIDEBAR (TABLET & MOBILE)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Tablet Overrides (< 1024px) ─────────────────────────────────── */
+@media (max-width: 1024px) {
+  /* Default all tablet states to collapsed styles */
+  #ax-sidebar {
+    width: var(--ax-sidebar-collapsed) !important;
+  }
+
+  /* Hide logo title text and force collapse styles on tablet */
+  #ax-sidebar .ax-logo-title,
+  #ax-sidebar .ax-section-label,
+  #ax-sidebar .ax-nav-label,
+  #ax-sidebar .ax-user-info,
+  #ax-sidebar .ax-footer-btn-text {
+    opacity: 0 !important;
+    display: none !important;
+  }
+
+  #ax-sidebar .ax-collapse-btn {
+    display: none !important; /* Hide collapse toggle on tablet/mobile */
+  }
+
+  #ax-sidebar .ax-logo-container {
+    justify-content: center !important;
+    padding: 0 !important;
+    height: var(--ax-topbar-height) !important;
+  }
+
+  #ax-sidebar .ax-user-row {
+    justify-content: center !important;
+    padding: 10px 0 !important;
+  }
+}
+
+/* ── Mobile Overrides (< 768px) ──────────────────────────────────── */
+@media (max-width: 768px) {
+  #ax-sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: -100% !important; /* Completely offscreen */
+    width: var(--ax-sidebar-width) !important; /* Expand back to full size drawer */
+    height: 100vh !important;
+    z-index: 1010 !important;
+    transition: left 250ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.15) !important;
+  }
+
+  /* When mobile sidebar is open, slide it in */
+  body.ax-mobile-sidebar-open #ax-sidebar {
+    left: 0 !important;
+  }
+
+  /* Reveal all labels inside the slide-in mobile drawer */
+  #ax-sidebar .ax-logo-title,
+  #ax-sidebar .ax-nav-label,
+  #ax-sidebar .ax-user-info {
+    opacity: 1 !important;
+    display: flex !important;
+  }
+  
+  #ax-sidebar .ax-section-label {
+    opacity: 0.3 !important;
+    display: block !important;
+  }
+
+  #ax-sidebar .ax-logo-container {
+    justify-content: space-between !important;
+    padding: 0 16px !important;
+  }
+
+  #ax-sidebar .ax-user-row {
+    justify-content: flex-start !important;
+    padding: 10px 14px !important;
+  }
+
+  /* Mobile Backdrop Overlay */
+  .ax-sidebar-backdrop {
+    display: none;
+  }
+
+  body.ax-mobile-sidebar-open .ax-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.3);
+    backdrop-filter: blur(2px);
+    z-index: 1008;
+    animation: ax-fade-in 200ms ease forwards;
+  }
+}

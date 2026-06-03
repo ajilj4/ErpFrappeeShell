@@ -1,0 +1,28 @@
+{
+  "name": "axonai-shell",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && mkdir -p ../frappe-bench/apps/axonai_ui/axonai_ui/public/js ../frappe-bench/apps/axonai_ui/axonai_ui/public/css && cp dist/js/axonai-bundle.js ../frappe-bench/apps/axonai_ui/axonai_ui/public/js/ && cp dist/css/axonai-bundle.css ../frappe-bench/apps/axonai_ui/axonai_ui/public/css/",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "lucide-react": "^0.395.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/react": "^18.3.1",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^5.0.0",
+    "eslint": "^10.3.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "eslint-plugin-react-refresh": "^0.4.12",
+    "globals": "^17.6.0",
+    "vite": "^5.4.11"
+  }
+}
