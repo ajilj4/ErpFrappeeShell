@@ -8,7 +8,7 @@
  *  3. browser popstate (back/forward buttons)
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { NAVIGATION } from '../data/subNavConfig.js';
 
 function resolveRoute(pathname) {
@@ -107,12 +107,18 @@ function resolveRoute(pathname) {
 }
 
 export function useRoute() {
+  const routeHistoryRef = useRef([window.location.pathname]);
   const [routeState, setRouteState] = useState(() =>
     resolveRoute(window.location.pathname)
   );
 
   const sync = useCallback(() => {
-    setRouteState(resolveRoute(window.location.pathname));
+    const currentPath = window.location.pathname;
+    setRouteState(resolveRoute(currentPath));
+    const history = routeHistoryRef.current;
+    if (history[history.length - 1] !== currentPath) {
+      history.push(currentPath);
+    }
   }, []);
 
   useEffect(() => {
@@ -169,14 +175,43 @@ export function useRoute() {
     } else {
       window.location.href = url;
     }
+
     // Update local state immediately
     setRouteState(resolveRoute(url));
+    const history = routeHistoryRef.current;
+    if (history[history.length - 1] !== url) {
+      history.push(url);
+    }
   }, []);
+
+  const goPrevious = useCallback(() => {
+    const history = routeHistoryRef.current;
+    const previous = history.length > 1 ? history[history.length - 2] : null;
+    if (previous) {
+      navigate(previous);
+      return;
+    }
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    navigate('/app');
+  }, [navigate]);
+
+  const goBack = useCallback(() => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      navigate('/app');
+    }
+  }, [navigate]);
 
   return {
     activeModule: routeState.moduleId,
     activeTab: routeState.tabId,
     navigate,
+    goBack,
+    goPrevious,
     sync
   };
 }

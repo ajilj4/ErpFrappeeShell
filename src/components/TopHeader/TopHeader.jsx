@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Bell, Menu } from 'lucide-react';
+import { Bell, Menu, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useRoute } from '../../hooks/useRoute.js';
 import GlobalSearch from './GlobalSearch.jsx';
 
 export default function TopHeader() {
@@ -7,6 +8,7 @@ export default function TopHeader() {
   const user = (window.frappe && window.frappe.session && window.frappe.session.user_fullname) || 'User';
   const initial = user.charAt(0).toUpperCase();
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const { goBack, goPrevious } = useRoute();
 
   const handleLogout = () => {
     if (window.frappe && window.frappe.app && window.frappe.app.logout) {
@@ -19,11 +21,28 @@ export default function TopHeader() {
   return (
     <header className="ax-topbar">
       {/* Left: Hamburger + Organization / Brand */}
-      <div className="ax-topbar-left" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="ax-topbar-left" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <button
+          className="ax-topbar-prev-btn"
+          onClick={goPrevious}
+          title="Previous"
+          type="button"
+        >
+          <ChevronLeft size={18} />
+        </button>
+        <button
+          className="ax-topbar-back-btn"
+          onClick={goBack}
+          title="Back"
+          type="button"
+        >
+          <ChevronRight size={18} />
+        </button>
         <button 
           className="ax-mobile-menu-btn" 
           onClick={() => document.body.classList.toggle('ax-mobile-sidebar-open')}
           title="Toggle Menu"
+          type="button"
         >
           <Menu size={20} />
         </button>

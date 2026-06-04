@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import SidebarLogo from './SidebarLogo.jsx';
 import SidebarItem from './SidebarItem.jsx';
 import SidebarFooter from './SidebarFooter.jsx';
@@ -6,13 +6,15 @@ import { MENU } from '../../data/menuConfig.js';
 import { useRoute } from '../../hooks/useRoute.js';
 
 export default function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const { activeModule, navigate } = useRoute();
 
+  useEffect(() => {
+    document.body.classList.toggle('ax-sidebar-collapsed', collapsed);
+  }, [collapsed]);
+
   const toggleCollapse = () => {
-    const nextCollapsed = !collapsed;
-    setCollapsed(nextCollapsed);
-    document.body.classList.toggle('ax-sidebar-collapsed', nextCollapsed);
+    setCollapsed((prev) => !prev);
   };
 
   const handleItemClick = (item) => {

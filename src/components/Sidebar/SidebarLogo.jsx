@@ -19,7 +19,8 @@ export default function SidebarLogo({ collapsed, onToggleCollapse }) {
       <button 
         className="ax-collapse-btn" 
         onClick={onToggleCollapse} 
-        title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        title={collapsed ? "Expand sidebar and show labels" : "Collapse sidebar to icons only"}
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         {collapsed ? <ChevronsRight size={16} /> : <ChevronsLeft size={16} />}
       </button>

@@ -25,6 +25,33 @@ body.ax-sidebar-collapsed #ax-sidebar {
   width: var(--ax-sidebar-collapsed);
 }
 
+body.ax-sidebar-collapsed .ax-sidebar-logo {
+  justify-content: center;
+  position: relative;
+}
+
+body.ax-sidebar-collapsed .ax-logo-icon {
+  margin: 0 auto;
+}
+
+body.ax-sidebar-collapsed .ax-sidebar-logo .ax-collapse-btn {
+  margin-left: 0;
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+body.ax-sidebar-collapsed .ax-nav-item {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+body.ax-sidebar-collapsed .ax-nav-icon {
+  margin: 0;
+}
+
 body.ax-sidebar-collapsed .ax-logo-name,
 body.ax-sidebar-collapsed .ax-nav-label,
 body.ax-sidebar-collapsed .ax-user-info,

@@ -18,6 +18,26 @@
 }
 
 /* Organization / Brand name */
+.ax-topbar-back-btn,
+.ax-topbar-prev-btn {
+  background: none;
+  border: none;
+  color: var(--ax-text-secondary);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: var(--ax-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--ax-transition), color var(--ax-transition);
+}
+
+.ax-topbar-back-btn:hover,
+.ax-topbar-prev-btn:hover {
+  background: #F3F4F6;
+  color: var(--ax-text-primary);
+}
+
 .ax-topbar-brand {
   font-size: 15px;
   font-weight: 600;

@@ -48,33 +48,33 @@ html, body {
 div.main-section {
   margin-left: var(--ax-sidebar-width) !important;
   transition: margin-left var(--ax-transition-slow), width var(--ax-transition-slow);
-  width: calc(100vw - var(--ax-sidebar-width)) !important;
+  width: calc(100% - var(--ax-sidebar-width)) !important;
   min-width: 0 !important;
 }
 
 body.ax-sidebar-collapsed div.main-section {
   margin-left: var(--ax-sidebar-collapsed) !important;
-  width: calc(100vw - var(--ax-sidebar-collapsed)) !important;
+  width: calc(100% - var(--ax-sidebar-collapsed)) !important;
 }
 
 /* ── Shift for SubNav ─────────────────────────────────────────────── */
 /* Default sidebar + SubNav */
 body.ax-has-subnav div.main-section {
   margin-left: calc(var(--ax-sidebar-width) + var(--ax-subnav-width)) !important;
-  width: calc(100vw - var(--ax-sidebar-width) - var(--ax-subnav-width)) !important;
+  width: calc(100% - var(--ax-sidebar-width) - var(--ax-subnav-width)) !important;
 }
 
 /* Collapsed sidebar + SubNav */
 body.ax-sidebar-collapsed.ax-has-subnav div.main-section {
   margin-left: calc(var(--ax-sidebar-collapsed) + var(--ax-subnav-width)) !important;
-  width: calc(100vw - var(--ax-sidebar-collapsed) - var(--ax-subnav-width)) !important;
+  width: calc(100% - var(--ax-sidebar-collapsed) - var(--ax-subnav-width)) !important;
 }
 
 /* ── STEP 4: Let layout-main-section-wrapper take full width ──────── */
 /* Since layout-side-section is hidden, the wrapper should fill the row */
 .layout-main .layout-main-section-wrapper {
   flex: 1 1 100% !important;
-  max-width: 100% !important;
+  max-width: none !important;
   min-width: 0 !important;
   width: 100% !important;
 }
@@ -95,7 +95,9 @@ body {
   background-color: var(--ax-page-bg) !important;
 }
 
-/* ── STEP 7: Hide Frappe's default navbar ────────────────────────── */
+/* ── STEP 7: Hide Frappe's sticky navbar wrapper only ─────────────── */
+body > div.main-section > div.sticky-top,
+body > div.main-section > div.sticky-top > header.navbar,
 body > div.main-section > header.navbar {
   display: none !important;
 }
