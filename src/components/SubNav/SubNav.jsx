@@ -1,20 +1,21 @@
 /**
  * SubNav.jsx
- * AxonAI One — Contextual Vertical Sub-Navigation Panel (Level 3 Navigation)
+ * AxonAI One — Contextual Vertical Sub-Navigation Panel
  *
- * Appears as a secondary left panel, displaying grouped links for the selected
- * horizontal ModuleNav tab (Level 2). Automatically handles layout shifts.
+ * Reads live data from frappe.boot.workspace_sidebar_item (Frappe v16)
+ * and falls back to static config when boot data is unavailable.
  */
 
 import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight, ArrowLeft } from 'lucide-react';
-import { NAVIGATION } from '../../data/subNavConfig.js';
+import { buildModuleTabs, STATIC_NAVIGATION } from '../../data/subNavConfig.js';
 import { useRoute } from '../../hooks/useRoute.js';
+
+// ── SubNavGroup ────────────────────────────────────────────────────────────
 
 function SubNavGroup({ group, onNavigate }) {
   const [expanded, setExpanded] = useState(true);
 
-  // Check if any of the items in this group matches the current URL path
   const hasActive = group.items.some((item) =>
     window.location.pathname.startsWith(item.url.split('?')[0])
   );
@@ -37,10 +38,14 @@ function SubNavGroup({ group, onNavigate }) {
       {expanded && (
         <ul className="ax-subnav-items" role="list">
           {group.items.map((item) => {
+            const currentPath = window.location.pathname;
             const urlBase = item.url.split('?')[0];
-            const isActive = window.location.pathname.startsWith(urlBase);
+            const isActive = urlBase !== '/' && urlBase !== '/app' && urlBase !== '/crm' && urlBase !== '/mail' && (
+              currentPath === urlBase ||
+              currentPath.startsWith(urlBase + '/')
+            );
             return (
-              <li key={item.url}>
+              <li key={item.url + item.label}>
                 <a
                   href={item.url}
                   className={`ax-subnav-item${isActive ? ' ax-subnav-item--active' : ''}`}
@@ -50,6 +55,7 @@ function SubNavGroup({ group, onNavigate }) {
                     document.body.classList.remove('ax-mobile-sidebar-open');
                   }}
                   aria-current={isActive ? 'page' : undefined}
+                  title={item.label}
                 >
                   <span className="ax-subnav-item-dot" />
                   {item.label}
@@ -63,11 +69,39 @@ function SubNavGroup({ group, onNavigate }) {
   );
 }
 
+// ── SubNav ─────────────────────────────────────────────────────────────────
+
 export default function SubNav() {
   const { activeModule, activeTab, navigate } = useRoute();
+  const [tabs, setTabs] = useState([]);
 
-  const moduleData = NAVIGATION[activeModule];
-  const activeTabConfig = moduleData?.tabs?.find((t) => t.id === activeTab);
+  // Re-compute tabs when module changes or when frappe.boot becomes available
+  useEffect(() => {
+    function computeTabs() {
+      // Try live boot data first
+      const liveTabs = buildModuleTabs(activeModule);
+      if (liveTabs.length > 0) {
+        setTabs(liveTabs);
+        return;
+      }
+      // Fallback to static config
+      const staticData = STATIC_NAVIGATION[activeModule];
+      setTabs(staticData?.tabs || []);
+    }
+
+    computeTabs();
+
+    // Re-compute once Frappe boot data becomes available
+    const timer = setTimeout(computeTabs, 500);
+    return () => clearTimeout(timer);
+  }, [activeModule]);
+
+  // Find the active tab config.
+  // When activeTab is null (catch-all route), show nothing rather than
+  // incorrectly defaulting to the first tab (e.g. "Organisation" for every page).
+  const activeTabConfig = activeTab
+    ? (tabs.find((t) => t.id === activeTab) || tabs[0] || null)
+    : null;
   const label = activeTabConfig?.label || '';
   const groups = activeTabConfig?.groups || [];
 
@@ -80,16 +114,13 @@ export default function SubNav() {
     };
   }, [hasSubNav]);
 
-  // Don't render if no sub-navigation links exist
-  if (!hasSubNav) {
-    return null;
-  }
+  if (!hasSubNav) return null;
 
   return (
     <aside className="ax-subnav" id="ax-subnav" aria-label={`${label} navigation`}>
-      {/* Module tab label header */}
+      {/* Header */}
       <div className="ax-subnav-header">
-        <button 
+        <button
           className="ax-subnav-back-btn"
           onClick={() => document.body.classList.add('ax-mobile-subnav-hidden')}
           title="Back to Modules"

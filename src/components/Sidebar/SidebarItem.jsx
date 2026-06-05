@@ -7,10 +7,13 @@ export default function SidebarItem({ item, collapsed, isActive, onClick }) {
       href={item.url}
       className={`ax-nav-item ${isActive ? 'ax-nav-active' : ''}`}
       onClick={(e) => {
-        if (item.url === '#copilot') {
-          e.preventDefault();
-          e.stopPropagation();
-        }
+        // Always prevent default — navigate() in useRoute handles ALL routing:
+        //   • /app/* → frappe.set_route() (Frappe desk SPA navigation)
+        //   • /crm, /mail → window.location.href (same-tab full-page navigation)
+        //   • /desk/* → window.location.href (Frappe desk direct routes)
+        //   • #copilot → toggle AI Copilot drawer
+        e.preventDefault();
+        e.stopPropagation();
         if (onClick) onClick(item);
       }}
       title={collapsed ? item.label : ''}
@@ -22,3 +25,4 @@ export default function SidebarItem({ item, collapsed, isActive, onClick }) {
     </a>
   );
 }
+

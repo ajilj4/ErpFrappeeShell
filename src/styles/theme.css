@@ -1,38 +1,61 @@
 /* ═══════════════════════════════════════════════════════════════════
    theme.css
-   AxonAI One — Global Design Tokens + Layout Overrides for Frappe v15
+   AxonAI One — Global Design Tokens + Layout Overrides for Frappe v16
    ═══════════════════════════════════════════════════════════════════ */
 
 /* 1. Google Fonts — Inter */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 /* ── Override Frappe font globally ────────────────────────────────── */
-body, .desk-body, .frappe-app, .navbar,
-input, select, textarea, button, .form-control {
+body,
+.desk-body,
+.frappe-app,
+.navbar,
+input,
+select,
+textarea,
+button,
+.form-control {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
-   FRAPPE v15 LAYOUT CORRECTIONS
+   FRAPPE v16 LAYOUT CORRECTIONS
    
-   Frappe v15 DOM (inside <body>):
-     div.main-section
-       header                     ← Frappe navbar (48px)
+   Frappe v16 DOM (inside <body>):
+     div.body-sidebar-container     ← NEW: Frappe v16 left sidebar (50px)
+     div.main-section               ← Main app shell
+       div.sticky-top               ← Frappe navbar (hidden by us)
+         header.navbar
        div#body
          div.page-container
-           div.page-body
+           div.page-wrapper          ← NEW: wraps page-head + content
+             div.page-head           ← Page breadcrumb bar (sticky)
              div.layout-main.row
-               div.col-lg-2.layout-side-section  ← HIDE THIS
+               div.col-lg-2.layout-side-section  ← Old sidebar column (hide)
                div.col.layout-main-section-wrapper ← Main content
    ═══════════════════════════════════════════════════════════════════ */
 
 /* ── STEP 1: Prevent horizontal overflow on body ──────────────────── */
-html, body {
+html,
+body {
   overflow-x: hidden !important;
 }
 
-/* ── STEP 2: Completely hide Frappe's built-in sidebar ────────────── */
-/* This column would cause content to overflow when our sidebar adds 260px */
+/* ── STEP 2A: Hide Frappe v16 body-sidebar-container ──────────────── */
+/* Frappe v16 prepends a .body-sidebar-container to <body> — we don't  */
+/* want it since AxonAI shell has its own sidebar.                      */
+.body-sidebar-container,
+.body-sidebar {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+/* ── STEP 2B: Hide old Frappe v15 layout-side-section ─────────────── */
 .layout-side-section {
   display: none !important;
   width: 0 !important;
@@ -43,13 +66,13 @@ html, body {
   overflow: hidden !important;
 }
 
-/* ── STEP 3: Shift entire desk content to the right of our sidebar ── */
-/* Frappe v15 structure: body > div.main-section contains everything  */
+/* ── STEP 3: Shift entire desk content to the right of AxonAI sidebar */
 div.main-section {
   margin-left: var(--ax-sidebar-width) !important;
   transition: margin-left var(--ax-transition-slow), width var(--ax-transition-slow);
   width: calc(100% - var(--ax-sidebar-width)) !important;
   min-width: 0 !important;
+  position: relative !important;
 }
 
 body.ax-sidebar-collapsed div.main-section {
@@ -58,20 +81,17 @@ body.ax-sidebar-collapsed div.main-section {
 }
 
 /* ── Shift for SubNav ─────────────────────────────────────────────── */
-/* Default sidebar + SubNav */
 body.ax-has-subnav div.main-section {
   margin-left: calc(var(--ax-sidebar-width) + var(--ax-subnav-width)) !important;
   width: calc(100% - var(--ax-sidebar-width) - var(--ax-subnav-width)) !important;
 }
 
-/* Collapsed sidebar + SubNav */
 body.ax-sidebar-collapsed.ax-has-subnav div.main-section {
   margin-left: calc(var(--ax-sidebar-collapsed) + var(--ax-subnav-width)) !important;
   width: calc(100% - var(--ax-sidebar-collapsed) - var(--ax-subnav-width)) !important;
 }
 
 /* ── STEP 4: Let layout-main-section-wrapper take full width ──────── */
-/* Since layout-side-section is hidden, the wrapper should fill the row */
 .layout-main .layout-main-section-wrapper {
   flex: 1 1 100% !important;
   max-width: none !important;
@@ -79,7 +99,7 @@ body.ax-sidebar-collapsed.ax-has-subnav div.main-section {
   width: 100% !important;
 }
 
-/* ── STEP 5: Prevent row from overflowing due to Bootstrap gutters ── */
+/* ── STEP 5: Prevent row overflow from Bootstrap gutters ──────────── */
 .layout-main.row {
   margin-left: 0 !important;
   margin-right: 0 !important;
@@ -95,24 +115,76 @@ body {
   background-color: var(--ax-page-bg) !important;
 }
 
-/* ── STEP 7: Hide Frappe's sticky navbar wrapper only ─────────────── */
-body > div.main-section > div.sticky-top,
-body > div.main-section > div.sticky-top > header.navbar,
-body > div.main-section > header.navbar {
+/* ── STEP 7: Hide Frappe's sticky navbar (we use AxonAI TopHeader) ── */
+body>div.main-section>div.sticky-top,
+body>div.main-section>div.sticky-top>header.navbar,
+body>div.main-section>header.navbar {
   display: none !important;
 }
 
-/* ── STEP 8: Smooth scrollbar ─────────────────────────────────────── */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 10px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); }
+/* ── STEP 8: De-sticky the Frappe v16 page-head ───────────────────── */
+/* In v16, .page-head has position:sticky; top:0 — this means it sticks */
+/* at the top of the scrolling .main-section. Since AxonAI injects its  */
+/* own TopHeader above, we need to un-sticky it so it scrolls normally. */
+.page-head {
+  position: relative !important;
+  top: auto !important;
+  z-index: 1 !important;
+}
 
-/* ── STEP 9: Keyboard bar bottom padding ─────────────────────────── */
-/* Prevents page content from being hidden behind the fixed bottom bar */
+/* ── STEP 9: De-sticky form tabs / list headers relative to page-head  */
+/* These use calc(--navbar-height + --page-head-height) — reset to 0   */
+.form-tabs-sticky-up,
+.form-tabs-sticky-down {
+  top: 0 !important;
+}
+
+/* ── STEP 10: Smooth scrollbar ────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.22);
+}
+
+/* ── STEP 11: Keyboard bar bottom padding ─────────────────────────── */
 .page-container,
 #body {
   padding-bottom: var(--ax-keyboard-height) !important;
+}
+
+/* ── STEP 12: Fix page-wrapper (v16 wraps content in page-wrapper) ── */
+/* Ensure the page-wrapper fills the column correctly                  */
+.page-wrapper {
+  width: 100% !important;
+  min-width: 0 !important;
+  overflow-x: hidden !important;
+}
+
+/* ── STEP 13: Fix list view sticky header (uses --navbar-height) ───── */
+/* v16 list sticky items assume navbar is still visible; offset to 0   */
+.list-header-subject.sticky,
+.list-header.sticky,
+.result-list-header.sticky {
+  top: 0 !important;
+}
+
+/* ── STEP 14: Fix form sidebar sticky (uses --page-head-height) ────── */
+.form-page-actions,
+.layout-side-section.form-sidebar {
+  top: 0 !important;
+  position: relative !important;
 }
 
 /* ── CSS transition slow variable fallback ───────────────────────── */
@@ -131,13 +203,13 @@ body > div.main-section > header.navbar {
     /* Collapse sidebar to 64px automatically by default on tablet */
     --ax-sidebar-width: var(--ax-sidebar-collapsed) !important;
   }
-  
+
   /* Force main section shifts for automatic tablet collapse */
   body div.main-section {
     margin-left: var(--ax-sidebar-collapsed) !important;
     width: calc(100vw - var(--ax-sidebar-collapsed)) !important;
   }
-  
+
   body.ax-has-subnav div.main-section {
     margin-left: calc(var(--ax-sidebar-collapsed) + var(--ax-subnav-width)) !important;
     width: calc(100vw - var(--ax-sidebar-collapsed) - var(--ax-subnav-width)) !important;
@@ -147,7 +219,8 @@ body > div.main-section > header.navbar {
 /* ── Mobile Viewport (< 768px) ────────────────────────────────────── */
 @media (max-width: 768px) {
   :root {
-    --ax-sidebar-width: 220px !important; /* Restore normal width for sliding mobile drawer */
+    --ax-sidebar-width: 220px !important;
+    /* Restore normal width for sliding mobile drawer */
   }
 
   /* Reset main section to take 100% viewport width and hide sidebar margins */
@@ -169,3 +242,132 @@ body > div.main-section > header.navbar {
   }
 }
 
+/* ── STEP 15: Suppress default Frappe home page grid content ──────── */
+.desk .layout-main-section-wrapper .page-container[data-page-route=""] .page-content>.container,
+.desk .layout-main-section-wrapper .page-container[data-page-route="home"] .page-content>.container,
+.desk .layout-main-section-wrapper .page-container[data-page-route=""] .widget-grid,
+.desk .layout-main-section-wrapper .page-container[data-page-route="home"] .widget-grid {
+  display: none !important;
+}
+
+/* ── STEP 16: Custom HomeOverride (Dashboard) Styling ───────────────── */
+.ax-home {
+  padding: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.ax-home-header {
+  margin-bottom: 48px;
+}
+
+.ax-home-greeting {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--ax-text-primary, #111827);
+  margin-bottom: 8px;
+}
+
+.ax-home-subtitle {
+  font-size: 16px;
+  color: var(--ax-text-secondary, #6B7280);
+}
+
+.ax-home-shortcuts {
+  margin-top: 24px;
+}
+
+.ax-home-section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ax-text-primary, #111827);
+  margin-bottom: 24px;
+}
+
+.ax-home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.ax-home-card {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  background: var(--ax-bg-card, #FFFFFF);
+  border: 1px solid var(--ax-border-color, #E5E7EB);
+  border-radius: 16px;
+  text-decoration: none !important;
+  color: inherit;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+}
+
+.ax-home-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--ax-primary-color, #3B82F6);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+}
+
+.ax-home-card-icon {
+  font-size: 32px;
+  margin-bottom: 16px;
+}
+
+.ax-home-card-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--ax-text-primary, #111827);
+}
+
+/* ── STEP 17: CRM & Mail Integration styling overrides ────────────── */
+
+/* Make .main-section behave as a flex container */
+body.ax-route-crm div.main-section,
+body.ax-route-mail div.main-section {
+  height: 100vh !important;
+  width: calc(100% - var(--ax-sidebar-width)) !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body.ax-route-crm.ax-has-subnav div.main-section,
+body.ax-route-mail.ax-has-subnav div.main-section {
+  width: calc(100% - var(--ax-sidebar-width) - var(--ax-subnav-width)) !important;
+}
+
+/* Force CRM & Mail Vue containers to fit exactly within remaining height */
+body.ax-route-crm #app,
+body.ax-route-mail #app {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  width: 100% !important;
+  overflow: hidden !important;
+}
+
+/* Contain any inner Tailwind fullscreen layouts */
+body.ax-route-crm #app > div,
+body.ax-route-crm #app .h-screen,
+body.ax-route-crm #app .w-screen,
+body.ax-route-mail #app > div,
+body.ax-route-mail #app .h-screen,
+body.ax-route-mail #app .w-screen {
+  height: 100% !important;
+  width: 100% !important;
+  max-height: 100% !important;
+  max-width: 100% !important;
+}
+
+/* Hide CRM AppSidebar & AppHeader */
+body.ax-route-crm div.h-full.border-r.bg-surface-menu-bar,
+body.ax-route-crm div.flex.border-b.pr-5 {
+  display: none !important;
+}
+
+/* Hide Mail AppSidebar */
+body.ax-route-mail div.relative.block.min-h-0.flex-shrink-0 {
+  display: none !important;
+}

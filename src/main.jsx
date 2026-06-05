@@ -34,6 +34,7 @@ import TopHeader from './components/TopHeader/TopHeader.jsx';
 import ModuleNav from './components/ModuleNav/ModuleNav.jsx';
 import KeyboardBar from './components/KeyboardBar/KeyboardBar.jsx';
 import CopilotDrawer from './components/AICopilot/CopilotDrawer.jsx';
+import HomeOverride from './components/HomeOverride/HomeOverride.jsx';
 import './styles/tokens.css';
 import './styles/theme.css';
 import './styles/sidebar.css';
@@ -108,6 +109,65 @@ function mountAxonAI() {
   );
 
   console.log('[AxonAI One] All components mounted: Sidebar, SubNav, Topbar, ModuleNav, KeyboardBar, CopilotDrawer ✓');
+  
+  // 5. Mount/check HomeOverride
+  mountHomeOverrideIfNeeded();
+}
+
+function mountHomeOverrideIfNeeded() {
+  const path = window.location.pathname;
+  const isHome = path === '/desk' || path === '/desk/' ||
+                 path === '/app' || path === '/app/' ||
+                 path.startsWith('/app/home');
+  
+  if (!isHome) {
+    // If not at home, ensure clean up of custom home
+    const existing = document.getElementById('ax-home-override-root');
+    if (existing) {
+      existing.remove();
+      const pageContent = document.querySelector('.page-content');
+      if (pageContent) {
+        pageContent.querySelectorAll(':scope > *').forEach(el => {
+          if (el.id !== 'ax-home-override-root') {
+            el.style.display = '';
+          }
+        });
+      }
+    }
+    return;
+  }
+
+  // If already mounted, check if we need to re-suppress standard page content
+  const existing = document.getElementById('ax-home-override-root');
+  if (existing) {
+    const pageContent = document.querySelector('.page-content');
+    if (pageContent) {
+      pageContent.querySelectorAll(':scope > *').forEach(el => {
+        if (el.id !== 'ax-home-override-root') {
+          el.style.display = 'none';
+        }
+      });
+    }
+    return;
+  }
+
+  const pageContent = document.querySelector('.page-content');
+  if (!pageContent) {
+    // Retry shortly if the page layout is still loading
+    setTimeout(mountHomeOverrideIfNeeded, 100);
+    return;
+  }
+
+  // Hide default elements
+  pageContent.querySelectorAll(':scope > *').forEach(el => {
+    el.style.display = 'none';
+  });
+
+  const homeRoot = document.createElement('div');
+  homeRoot.id = 'ax-home-override-root';
+  pageContent.prepend(homeRoot);
+  createRoot(homeRoot).render(<React.StrictMode><HomeOverride /></React.StrictMode>);
+  console.log('[AxonAI One] Custom HomeOverride mounted ✓');
 }
 
 let _bootAttempts = 0;
@@ -115,11 +175,51 @@ function _tryReactBoot() {
   _bootAttempts++;
   if (_bootAttempts > 150) return;
 
-  const frappReady = typeof frappe !== 'undefined' && frappe.boot && frappe.boot.user;
+  const path = window.location.pathname;
+  const isExternalSPA = path.startsWith('/crm') || path.startsWith('/mail');
+  const frappReady = isExternalSPA || (typeof frappe !== 'undefined' && frappe.boot && frappe.boot.user);
   const domReady = !!document.querySelector('.main-section');
 
   if (frappReady && domReady) {
+    // Inject active route classes to body
+    if (path.startsWith('/crm')) {
+      document.body.classList.add('ax-route-crm');
+    } else {
+      document.body.classList.remove('ax-route-crm');
+    }
+    if (path.startsWith('/mail')) {
+      document.body.classList.add('ax-route-mail');
+    } else {
+      document.body.classList.remove('ax-route-mail');
+    }
+
     mountAxonAI();
+    
+    // Listen for route changes
+    if (window.frappe && window.frappe.router) {
+      window.frappe.router.on('change', mountHomeOverrideIfNeeded);
+    }
+    
+    // Poll for pathname changes (e.g. back from Vue SPA routes)
+    let lastPath = window.location.pathname;
+    setInterval(() => {
+      const current = window.location.pathname;
+      if (current !== lastPath) {
+        lastPath = current;
+        if (current.startsWith('/crm')) {
+          document.body.classList.add('ax-route-crm');
+        } else {
+          document.body.classList.remove('ax-route-crm');
+        }
+        if (current.startsWith('/mail')) {
+          document.body.classList.add('ax-route-mail');
+        } else {
+          document.body.classList.remove('ax-route-mail');
+        }
+        mountHomeOverrideIfNeeded();
+      }
+    }, 300);
+
   } else {
     setTimeout(_tryReactBoot, 100);
   }

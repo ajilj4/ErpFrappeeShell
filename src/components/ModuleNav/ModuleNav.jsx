@@ -2,29 +2,43 @@
  * ModuleNav.jsx
  * AxonAI One — Horizontal Module Tab Bar (Level 2 Navigation)
  *
- * Renders the horizontal tabs directly below the TopHeader based on the selected
- * primary sidebar module (Level 1). Synchronizes with activeTab.
+ * Renders horizontal tabs from Frappe v16 boot data (workspace_sidebar_item)
+ * for the active module. Falls back to static config when boot is unavailable.
  */
 
-import React from 'react';
-import { NAVIGATION } from '../../data/subNavConfig.js';
+import React, { useState, useEffect } from 'react';
+import { buildModuleTabs, STATIC_NAVIGATION } from '../../data/subNavConfig.js';
 import { useRoute } from '../../hooks/useRoute.js';
 
 export default function ModuleNav() {
   const { activeModule, activeTab, navigate } = useRoute();
+  const [tabs, setTabs] = useState([]);
 
-  const moduleData = NAVIGATION[activeModule];
-  const tabs = moduleData?.tabs || [];
+  useEffect(() => {
+    function computeTabs() {
+      // Try live Frappe v16 boot data first
+      const liveTabs = buildModuleTabs(activeModule);
+      if (liveTabs.length > 0) {
+        setTabs(liveTabs);
+        return;
+      }
+      // Static fallback
+      const staticData = STATIC_NAVIGATION[activeModule];
+      setTabs(staticData?.tabs || []);
+    }
+
+    computeTabs();
+    // Retry after boot data loads
+    const timer = setTimeout(computeTabs, 600);
+    return () => clearTimeout(timer);
+  }, [activeModule]);
 
   const handleClick = (e, tab) => {
     e.preventDefault();
     navigate(tab.url);
   };
 
-  // If no horizontal tabs exist for the active module, don't render anything
-  if (tabs.length === 0) {
-    return null;
-  }
+  if (tabs.length === 0) return null;
 
   return (
     <nav className="ax-module-nav" aria-label="Module navigation">
