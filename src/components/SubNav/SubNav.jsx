@@ -4,9 +4,13 @@
  *
  * Reads live data from frappe.boot.workspace_sidebar_item (Frappe v16)
  * and falls back to static config when boot data is unavailable.
+ *
+ * FIXED: Uses useMemo for synchronous tab computation (no flash between
+ *        module changes). Always shows first tab content when activeTab
+ *        doesn't match — prevents SubNav from hiding unexpectedly.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronDown, ChevronRight, ArrowLeft } from 'lucide-react';
 import { buildModuleTabs, STATIC_NAVIGATION } from '../../data/subNavConfig.js';
 import { useRoute } from '../../hooks/useRoute.js';
@@ -73,38 +77,35 @@ function SubNavGroup({ group, onNavigate }) {
 
 export default function SubNav() {
   const { activeModule, activeTab, navigate } = useRoute();
-  const [tabs, setTabs] = useState([]);
 
-  // Re-compute tabs when module changes or when frappe.boot becomes available
+  // ── Boot data retry: increment after 500ms to re-trigger useMemo ─────
+  const [bootVersion, setBootVersion] = useState(0);
   useEffect(() => {
-    function computeTabs() {
-      // Try live boot data first
-      const liveTabs = buildModuleTabs(activeModule);
-      if (liveTabs.length > 0) {
-        setTabs(liveTabs);
-        return;
-      }
-      // Fallback to static config
-      const staticData = STATIC_NAVIGATION[activeModule];
-      setTabs(staticData?.tabs || []);
-    }
-
-    computeTabs();
-
-    // Re-compute once Frappe boot data becomes available
-    const timer = setTimeout(computeTabs, 500);
+    const timer = setTimeout(() => setBootVersion((v) => v + 1), 500);
     return () => clearTimeout(timer);
   }, [activeModule]);
 
-  // Find the active tab config.
-  // When activeTab is null (catch-all route), show nothing rather than
-  // incorrectly defaulting to the first tab (e.g. "Organisation" for every page).
-  const activeTabConfig = activeTab
-    ? (tabs.find((t) => t.id === activeTab) || tabs[0] || null)
+  // ── Compute tabs synchronously — no flash between module changes ─────
+  const tabs = useMemo(() => {
+    // Try live boot data first
+    const liveTabs = buildModuleTabs(activeModule);
+    if (liveTabs.length > 0) return liveTabs;
+    // Fallback to static config
+    const staticData = STATIC_NAVIGATION[activeModule];
+    return staticData?.tabs || [];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeModule, bootVersion]);
+
+  // ── Find the active tab config ───────────────────────────────────────
+  // FIX: When activeTab doesn't match any tab, fall back to first tab
+  //      instead of returning null. This prevents the SubNav from hiding
+  //      when navigating to URLs that don't have a precise tab mapping.
+  const activeTabConfig = tabs.length > 0
+    ? (tabs.find((t) => t.id === activeTab) || tabs[0])
     : null;
+
   const label = activeTabConfig?.label || '';
   const groups = activeTabConfig?.groups || [];
-
   const hasSubNav = groups.length > 0;
 
   useEffect(() => {

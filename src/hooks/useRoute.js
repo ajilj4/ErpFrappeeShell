@@ -23,24 +23,40 @@ function resolveRoute(pathname) {
   const path = pathname.split('?')[0];
 
   // ── 0. External Vue SPA routes ──────────────────────────────────
-  // CRM: standalone Vue 3 SPA at /crm (createWebHistory('/crm'))
+  // CRM standalone SPA (if installed) at /crm
   if (path === '/crm' || path.startsWith('/crm/')) {
-    if (path.startsWith('/crm/dashboard'))     return { moduleId: 'crm', tabId: 'dashboard' };
+    if (path.startsWith('/crm/dashboard'))     return { moduleId: 'crm', tabId: 'pipeline' };
     if (path.startsWith('/crm/leads'))         return { moduleId: 'crm', tabId: 'pipeline' };
     if (path.startsWith('/crm/deals'))         return { moduleId: 'crm', tabId: 'pipeline' };
-    if (path.startsWith('/crm/contacts'))      return { moduleId: 'crm', tabId: 'contacts' };
-    if (path.startsWith('/crm/organizations')) return { moduleId: 'crm', tabId: 'contacts' };
-    if (path.startsWith('/crm/notes') || path.startsWith('/crm/tasks') ||
-        path.startsWith('/crm/call-logs') || path.startsWith('/crm/calendar')) {
-      return { moduleId: 'crm', tabId: 'activity' };
-    }
-    return { moduleId: 'crm', tabId: 'dashboard' };
+    if (path.startsWith('/crm/contacts'))      return { moduleId: 'crm', tabId: 'customers' };
+    if (path.startsWith('/crm/organizations')) return { moduleId: 'crm', tabId: 'customers' };
+    return { moduleId: 'crm', tabId: 'pipeline' };
   }
 
-  // Mail: standalone Vue 3 SPA at /mail (createWebHistory('/mail'))
+  // Mail standalone SPA at /mail
   if (path === '/mail' || path.startsWith('/mail/')) {
     if (path.startsWith('/mail/dashboard')) return { moduleId: 'mail', tabId: 'admin' };
     return { moduleId: 'mail', tabId: 'mailbox' };
+  }
+
+  // ── 0b. CRM ERPNext desk routes (BEFORE NAVIGATION walk) ────────
+  // These MUST come before the walk so CRM module takes priority.
+  if (path.startsWith('/app/lead')) {
+    return { moduleId: 'crm', tabId: 'pipeline' };
+  }
+  if (path.startsWith('/app/opportunity')) {
+    return { moduleId: 'crm', tabId: 'pipeline' };
+  }
+  if (path.startsWith('/app/prospect')) {
+    return { moduleId: 'crm', tabId: 'pipeline' };
+  }
+  if (path.startsWith('/app/campaign') || path.startsWith('/app/email-campaign') ||
+      path.startsWith('/app/lead-source') || path.startsWith('/app/sales-stage') ||
+      path.startsWith('/app/market-segment') || path.startsWith('/app/industry-type')) {
+    return { moduleId: 'crm', tabId: 'campaigns' };
+  }
+  if (path === '/app/crm' || path === '/app/crm/') {
+    return { moduleId: 'crm', tabId: 'pipeline' };
   }
 
   // ── 1. Walk through all modules in NAVIGATION to find a Level 3 item URL match
@@ -76,34 +92,87 @@ function resolveRoute(pathname) {
   if (path.startsWith('/app/buying')) {
     return { moduleId: 'erp', tabId: 'buying' };
   }
-  if (path.startsWith('/app/item') || path.startsWith('/app/product-bundle')) {
+  if (path.startsWith('/app/item') || path.startsWith('/app/product-bundle') ||
+      path.startsWith('/app/item-group') || path.startsWith('/app/uom') ||
+      path.startsWith('/app/brand') || path.startsWith('/app/stock-settings') ||
+      path.startsWith('/app/material-request')) {
     return { moduleId: 'erp', tabId: 'stock' };
   }
-  if (path.startsWith('/app/bank')) {
+  // Subcontracting
+  if (path.startsWith('/app/subcontracting')) {
+    return { moduleId: 'erp', tabId: 'subcontracting' };
+  }
+  // Banking — match specific bank-* routes
+  if (path.startsWith('/app/bank-clearance') || path.startsWith('/app/bank-reconciliation') ||
+      path.startsWith('/app/bank-account') || path.startsWith('/app/bank-guarantee') ||
+      path.startsWith('/app/plaid-settings') || path.startsWith('/app/dunning') ||
+      path === '/app/bank' || path.startsWith('/app/bank/') ||
+      path.startsWith('/app/banking')) {
     return { moduleId: 'erp', tabId: 'banking' };
   }
+  // Payments — specific payment routes
+  if (path.startsWith('/app/payment-entry') || path.startsWith('/app/payment-request') ||
+      path.startsWith('/app/payment-order') || path.startsWith('/app/payment-reconciliation') ||
+      path.startsWith('/app/unreconcile-payment') || path.startsWith('/app/process-payment-reconciliation') ||
+      path.startsWith('/app/repost-accounting-ledger') || path.startsWith('/app/repost-payment-ledger') ||
+      path.startsWith('/app/payments')) {
+    return { moduleId: 'erp', tabId: 'payments' };
+  }
+  // Accounting
   if (path.startsWith('/app/accounts') || path.startsWith('/app/account') ||
-      path.startsWith('/app/journal-entry') || path.startsWith('/app/payment-entry')) {
+      path.startsWith('/app/journal-entry') || path.startsWith('/app/cost-center') ||
+      path.startsWith('/app/period-closing') || path.startsWith('/app/fiscal-year') ||
+      path.startsWith('/app/currency') || path.startsWith('/app/mode-of-payment') ||
+      path.startsWith('/app/payment-terms') || path.startsWith('/app/accounting')) {
     return { moduleId: 'erp', tabId: 'accounts_setup' };
   }
   if (path.startsWith('/app/stock-entry') || path.startsWith('/app/stock') ||
       path.startsWith('/app/warehouse') || path.startsWith('/app/delivery-note') ||
-      path.startsWith('/app/purchase-receipt')) {
+      path.startsWith('/app/purchase-receipt') || path.startsWith('/app/stock-reconciliation')) {
     return { moduleId: 'erp', tabId: 'stock' };
   }
   if (path.startsWith('/app/bom') || path.startsWith('/app/work-order') ||
-      path.startsWith('/app/job-card') || path.startsWith('/app/production-plan')) {
+      path.startsWith('/app/job-card') || path.startsWith('/app/production-plan') ||
+      path.startsWith('/app/workstation') || path.startsWith('/app/operation') ||
+      path.startsWith('/app/routing') || path.startsWith('/app/manufacturing')) {
     return { moduleId: 'erp', tabId: 'manufacturing' };
   }
   if (path.startsWith('/app/project') || path.startsWith('/app/task') ||
-      path.startsWith('/app/timesheet')) {
+      path.startsWith('/app/timesheet') || path.startsWith('/app/projects')) {
     return { moduleId: 'erp', tabId: 'projects' };
   }
-  if (path.startsWith('/app/asset')) {
+  if (path.startsWith('/app/asset') || path.startsWith('/app/location') ||
+      path.startsWith('/app/assets')) {
     return { moduleId: 'erp', tabId: 'assets' };
   }
-  if (path.startsWith('/app/gst-settings')) {
-    return { moduleId: 'erp', tabId: 'gst' };
+  // Budget
+  if (path.startsWith('/app/budget') || path.startsWith('/app/monthly-distribution')) {
+    return { moduleId: 'erp', tabId: 'budget' };
+  }
+  // Subscription
+  if (path.startsWith('/app/subscription')) {
+    return { moduleId: 'erp', tabId: 'subscription' };
+  }
+  // Share Management
+  if (path.startsWith('/app/share-transfer') || path.startsWith('/app/shareholder') ||
+      path.startsWith('/app/share-type') || path.startsWith('/app/share-management')) {
+    return { moduleId: 'erp', tabId: 'share_management' };
+  }
+  // Taxes
+  if (path.startsWith('/app/tax-') || path.startsWith('/app/gst-settings') ||
+      path.startsWith('/app/item-tax-template') || path.startsWith('/app/sales-taxes') ||
+      path.startsWith('/app/purchase-taxes') || path.startsWith('/app/taxes')) {
+    return { moduleId: 'erp', tabId: 'taxes' };
+  }
+  // ERPNext Settings
+  if (path.startsWith('/app/erpnext-settings') || path.startsWith('/app/domain-settings') ||
+      path.startsWith('/app/data-import') || path.startsWith('/app/data-export') ||
+      path.startsWith('/app/rename-tool')) {
+    return { moduleId: 'erp', tabId: 'erpnext_settings' };
+  }
+  // Financial Reports
+  if (path.startsWith('/app/financial-reports')) {
+    return { moduleId: 'erp', tabId: 'financial_reports' };
   }
 
   // ── 3. HRMS Frappe desk routes (/app/*) ─────────────────────────
