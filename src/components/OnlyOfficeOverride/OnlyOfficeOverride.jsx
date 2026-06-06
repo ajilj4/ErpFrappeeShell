@@ -197,12 +197,24 @@ function DocumentsHome({ onCreateNew, onOpenFile }) {
 }
 
 // ── Editor ──────────────────────────────────────────────────────────────────
-function DocumentEditor({ fileUrl, fileName, fileKey, fileType }) {
+function DocumentEditor({ fileUrl, fileName, fileKey, fileType, fileId, onRenameSuccess }) {
   const containerRef = useRef(null);
   const editorRef = useRef(null);
   const [scriptLoaded, setScriptLoaded] = useState(!!window.DocsAPI);
   const [error, setError] = useState(null);
   const [ready, setReady] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('saved'); // 'saved' | 'saving' | 'modified'
+  const [showSavedToast, setShowSavedToast] = useState(false);
+  const prevStatusRef = useRef(saveStatus);
+
+  useEffect(() => {
+    if (prevStatusRef.current === 'modified' && saveStatus === 'saved') {
+      setShowSavedToast(true);
+      const timer = setTimeout(() => setShowSavedToast(false), 3000);
+      return () => clearTimeout(timer);
+    }
+    prevStatusRef.current = saveStatus;
+  }, [saveStatus]);
 
   // Load OnlyOffice API script once
   useEffect(() => {
@@ -222,7 +234,7 @@ function DocumentEditor({ fileUrl, fileName, fileKey, fileType }) {
     document.head.appendChild(script);
   }, []);
 
-  // Init editor when script is ready and fileUrl changes
+  // Init editor when script is ready and fileKey changes
   useEffect(() => {
     if (!scriptLoaded || !containerRef.current || !window.DocsAPI) return;
 
@@ -234,7 +246,8 @@ function DocumentEditor({ fileUrl, fileName, fileKey, fileType }) {
     const user = window.frappe?.session?.user || 'user@example.com';
     const userName = window.frappe?.session?.user_fullname || 'User';
     const callbackUrl = makeServerUrl(
-      `/api/method/axonai_ui.onlyoffice.callback?file_name=${encodeURIComponent(fileName)}`
+      `/api/method/axonai_ui.onlyoffice.callback?file_name=${encodeURIComponent(fileName)}` +
+      (fileId ? `&file_id=${encodeURIComponent(fileId)}` : '')
     );
 
     try {
@@ -257,6 +270,42 @@ function DocumentEditor({ fileUrl, fileName, fileKey, fileType }) {
         height: '100%',
         events: {
           onAppReady: () => setReady(true),
+          onDocumentStateChange: (evt) => {
+            if (evt.data) {
+              setSaveStatus('modified');
+            } else {
+              setSaveStatus('saved');
+            }
+          },
+          onRequestRename: (evt) => {
+            const newTitleWithExt = evt.data;
+            const baseName = newTitleWithExt.replace(/\.[^.]+$/, '');
+            
+            if (!baseName.trim()) {
+              editorRef.current?.setRenameStatus("error", "Name cannot be empty.");
+              return;
+            }
+
+            editorRef.current?.setRenameStatus("loading");
+
+            window.frappe.call({
+              method: 'axonai_ui.onlyoffice.rename_document',
+              args: { file_name: fileName, new_title: baseName.trim() },
+              callback: (r) => {
+                if (r.message && r.message.file_name) {
+                  editorRef.current?.setRenameStatus("success", r.message.file_name);
+                  if (onRenameSuccess) {
+                    onRenameSuccess(r.message.file_name, makeAbsolute(r.message.file_url));
+                  }
+                } else {
+                  editorRef.current?.setRenameStatus("error", "Rename failed. Invalid server response.");
+                }
+              },
+              error: (err) => {
+                editorRef.current?.setRenameStatus("error", err?.message || "Rename failed.");
+              }
+            });
+          },
           onError: (evt) => {
             const msg = evt?.data?.errorDescription || 'Unknown error';
             setError(`OnlyOffice error: ${msg}`);
@@ -274,7 +323,7 @@ function DocumentEditor({ fileUrl, fileName, fileKey, fileType }) {
       }
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scriptLoaded, fileUrl, fileKey]);
+  }, [scriptLoaded, fileKey]);
 
   return (
     <div className="ax-doc-editor-view">
@@ -294,6 +343,16 @@ function DocumentEditor({ fileUrl, fileName, fileKey, fileType }) {
             ref={containerRef}
             style={{ width: '100%', height: '100%', opacity: ready ? 1 : 0 }}
           />
+          {saveStatus === 'modified' && (
+            <div className="ax-save-status-pill saving">
+              <span className="ax-save-status-dot pulse" /> Saving changes...
+            </div>
+          )}
+          {saveStatus === 'saved' && showSavedToast && (
+            <div className="ax-save-status-pill saved">
+              <span className="ax-save-status-dot">✓</span> Saved to AxonAI
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -307,14 +366,51 @@ export default function OnlyOfficeOverride() {
   const [createError, setCreateError] = useState(null);
   const isCreatingRef = useRef(false);
 
+  // Toggle active editor body class to hide/recalculate Level 2 Module Nav
+  useEffect(() => {
+    if (view === 'editor') {
+      document.body.classList.add('ax-editor-active');
+    } else {
+      document.body.classList.remove('ax-editor-active');
+    }
+    return () => {
+      document.body.classList.remove('ax-editor-active');
+    };
+  }, [view]);
+
+  const handleRenameSuccess = useCallback((newFileName, newFileUrl) => {
+    setEditorProps(prev => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        fileName: newFileName,
+        fileUrl: newFileUrl
+      };
+    });
+
+    const params = new URLSearchParams(window.location.search);
+    params.set('file_name', newFileName);
+    params.set('file_url', newFileUrl);
+    window.history.replaceState(
+      null, null,
+      `/app/documents?${params.toString()}`
+    );
+  }, []);
+
   const openEditor = useCallback((absUrl, fileName, name) => {
     const fileType = getDocType(fileName);
     const fileKey = (name || fileName) + '_' + Date.now();
-    setEditorProps({ fileUrl: absUrl, fileName, fileKey, fileType });
+    setEditorProps({ fileUrl: absUrl, fileName, fileKey, fileType, fileId: name });
     setView('editor');
+    
+    const params = new URLSearchParams();
+    params.set('file_name', fileName);
+    params.set('file_url', absUrl);
+    if (name) params.set('file_id', name);
+
     window.history.replaceState(
       null, null,
-      `/app/documents?file_name=${encodeURIComponent(fileName)}&file_url=${encodeURIComponent(absUrl)}`
+      `/app/documents?${params.toString()}`
     );
   }, []);
 
@@ -363,8 +459,9 @@ export default function OnlyOfficeOverride() {
     // /app/documents?file_url=...&file_name=...  →  open that file
     const fileUrl = params.get('file_url');
     const fileName = params.get('file_name');
+    const fileId = params.get('file_id');
     if (fileUrl && fileName) {
-      openEditor(makeAbsolute(fileUrl), fileName);
+      openEditor(makeAbsolute(fileUrl), fileName, fileId);
       return;
     }
 
@@ -403,7 +500,7 @@ export default function OnlyOfficeOverride() {
       )}
 
       {view === 'editor' && editorProps && (
-        <DocumentEditor {...editorProps} />
+        <DocumentEditor {...editorProps} onRenameSuccess={handleRenameSuccess} />
       )}
     </div>
   );

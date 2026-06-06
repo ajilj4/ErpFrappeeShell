@@ -124,7 +124,8 @@ function mountPageOverridesIfNeeded() {
                  path === '/app' || path === '/app/' ||
                  path.startsWith('/app/home');
                  
-  const isOnlyOffice = path.startsWith('/app/documents') || path.startsWith('/app/onlyoffice');
+  const isOnlyOffice = path.startsWith('/app/documents') || path.startsWith('/app/onlyoffice') ||
+                       path.startsWith('/desk/documents') || path.startsWith('/desk/onlyoffice');
   
   const pageContent = document.querySelector('.page-content');
   

@@ -402,7 +402,10 @@ export function useRoute() {
     }
 
     // ── Internal React SPA Routes (bypass Frappe router) ──────
-    const INTERNAL_REACT_PREFIXES = ['/app/documents', '/app/onlyoffice'];
+    const INTERNAL_REACT_PREFIXES = [
+      '/app/documents', '/app/onlyoffice',
+      '/desk/documents', '/desk/onlyoffice'
+    ];
     const isInternalReactRoute = INTERNAL_REACT_PREFIXES.some(
       (prefix) => url === prefix || url.startsWith(prefix + '/') || url.startsWith(prefix + '?')
     );

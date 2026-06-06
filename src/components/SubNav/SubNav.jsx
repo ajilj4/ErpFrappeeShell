@@ -131,7 +131,8 @@ export default function SubNav() {
       if (recentGroup) {
         recentGroup.items = recentFiles.map((f) => ({
           label: f.file_name,
-          url: `/app/documents?file_name=${encodeURIComponent(f.file_name)}&file_url=${encodeURIComponent(f.file_url)}`
+          url: `/app/documents?file_name=${encodeURIComponent(f.file_name)}&file_url=${encodeURIComponent(f.file_url)}` +
+               (f.name ? `&file_id=${encodeURIComponent(f.name)}` : '')
         }));
       }
       return mappedGroups;
