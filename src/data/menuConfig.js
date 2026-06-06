@@ -8,6 +8,7 @@ import {
   Cpu, 
   BarChart2, 
   FileText, 
+  FileEdit,
   Calendar, 
   Phone, 
   Settings 
@@ -25,7 +26,8 @@ export const MENU = [
   { id: 'copilot',    label: 'AI Copilot',  icon: Sparkles,     url: '#copilot',              section: 'Tools'     },
   { id: 'automation', label: 'Automation',  icon: Cpu,          url: '/app/automation',       section: null        },
   { id: 'reports',    label: 'Reports',     icon: BarChart2,    url: '/app/report',           section: null        },
-  { id: 'files',      label: 'Files',       icon: FileText,     url: '/app/file',             section: null, dividerAfter: true },
+  { id: 'files',      label: 'Files',       icon: FileText,     url: '/app/file',             section: null        },
+  { id: 'documents',  label: 'Documents',   icon: FileEdit,     url: '/app/documents',        section: null, dividerAfter: true },
 
   // ── Communication ────────────────────────────────────
   { id: 'calendar',   label: 'Calendar',    icon: Calendar,     url: '/app/event',            section: null        },

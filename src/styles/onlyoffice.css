@@ -1,0 +1,55 @@
+/* onlyoffice.css */
+#ax-onlyoffice-override {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--ax-bg-main);
+  z-index: 10;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+.ax-onlyoffice-header {
+  margin-bottom: 1rem;
+}
+
+.ax-onlyoffice-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--ax-text-main);
+}
+
+.ax-onlyoffice-error {
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  padding: 1.5rem;
+  color: var(--ax-text-main);
+}
+
+.ax-onlyoffice-help {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: var(--ax-text-muted);
+}
+
+.ax-onlyoffice-container {
+  flex: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: var(--ax-bg-surface);
+  box-shadow: var(--ax-shadow-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ax-onlyoffice-loading {
+  color: var(--ax-text-muted);
+  font-size: 1rem;
+}

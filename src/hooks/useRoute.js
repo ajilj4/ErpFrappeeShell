@@ -280,6 +280,9 @@ function resolveRoute(pathname) {
   if (path.startsWith('/app/file')) {
     return { moduleId: 'files', tabId: 'explorer' };
   }
+  if (path.startsWith('/app/documents') || path.startsWith('/app/onlyoffice')) {
+    return { moduleId: 'documents', tabId: 'editor' };
+  }
   if (path.startsWith('/app/event')) {
     return { moduleId: 'calendar', tabId: 'events' };
   }
@@ -395,6 +398,31 @@ export function useRoute() {
         history.push(url);
       }
       window.location.href = url;
+      return;
+    }
+
+    // ── Internal React SPA Routes (bypass Frappe router) ──────
+    const INTERNAL_REACT_PREFIXES = ['/app/documents', '/app/onlyoffice'];
+    const isInternalReactRoute = INTERNAL_REACT_PREFIXES.some(
+      (prefix) => url === prefix || url.startsWith(prefix + '/')
+    );
+
+    if (isInternalReactRoute) {
+      // Use pushState to avoid Frappe's "Page Not Found" popup
+      window.history.pushState(null, null, url);
+      
+      // Update our global store immediately
+      const newState = resolveRoute(url);
+      routeStore.setState(newState);
+      const history = routeHistoryRef.current;
+      if (history[history.length - 1] !== url) {
+        history.push(url);
+      }
+      
+      // Trigger our overrides mounter immediately
+      if (typeof window.__axonai_mount_overrides === 'function') {
+        window.__axonai_mount_overrides();
+      }
       return;
     }
 

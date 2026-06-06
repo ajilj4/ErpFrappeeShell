@@ -35,6 +35,7 @@ import ModuleNav from './components/ModuleNav/ModuleNav.jsx';
 import KeyboardBar from './components/KeyboardBar/KeyboardBar.jsx';
 import CopilotDrawer from './components/AICopilot/CopilotDrawer.jsx';
 import HomeOverride from './components/HomeOverride/HomeOverride.jsx';
+import OnlyOfficeOverride from './components/OnlyOfficeOverride/OnlyOfficeOverride.jsx';
 import './styles/tokens.css';
 import './styles/theme.css';
 import './styles/sidebar.css';
@@ -43,6 +44,7 @@ import './styles/topbar.css';
 import './styles/modulenav.css';
 import './styles/keyboard.css';
 import './styles/copilot.css';
+import './styles/onlyoffice.css';
 
 function mountAxonAI() {
   if (document.getElementById('axonai-sidebar-root')) return;
@@ -110,64 +112,85 @@ function mountAxonAI() {
 
   console.log('[AxonAI One] All components mounted: Sidebar, SubNav, Topbar, ModuleNav, KeyboardBar, CopilotDrawer ✓');
   
-  // 5. Mount/check HomeOverride
-  mountHomeOverrideIfNeeded();
+  // 5. Mount/check Page Overrides
+  mountPageOverridesIfNeeded();
 }
 
-function mountHomeOverrideIfNeeded() {
+window.__axonai_mount_overrides = mountPageOverridesIfNeeded;
+
+function mountPageOverridesIfNeeded() {
   const path = window.location.pathname;
   const isHome = path === '/desk' || path === '/desk/' ||
                  path === '/app' || path === '/app/' ||
                  path.startsWith('/app/home');
+                 
+  const isOnlyOffice = path.startsWith('/app/documents') || path.startsWith('/app/onlyoffice');
   
-  if (!isHome) {
-    // If not at home, ensure clean up of custom home
-    const existing = document.getElementById('ax-home-override-root');
-    if (existing) {
-      existing.remove();
-      const pageContent = document.querySelector('.page-content');
-      if (pageContent) {
-        pageContent.querySelectorAll(':scope > *').forEach(el => {
-          if (el.id !== 'ax-home-override-root') {
-            el.style.display = '';
-          }
-        });
-      }
-    }
-    return;
-  }
-
-  // If already mounted, check if we need to re-suppress standard page content
-  const existing = document.getElementById('ax-home-override-root');
-  if (existing) {
-    const pageContent = document.querySelector('.page-content');
+  const pageContent = document.querySelector('.page-content');
+  
+  if (!isHome && !isOnlyOffice) {
+    // Clean up all overrides
+    ['ax-home-override-root', 'ax-onlyoffice-override-root'].forEach(id => {
+      const existing = document.getElementById(id);
+      if (existing) existing.remove();
+    });
+    
     if (pageContent) {
       pageContent.querySelectorAll(':scope > *').forEach(el => {
-        if (el.id !== 'ax-home-override-root') {
-          el.style.display = 'none';
+        if (el.id !== 'ax-home-override-root' && el.id !== 'ax-onlyoffice-override-root') {
+          el.style.display = '';
         }
       });
     }
     return;
   }
 
-  const pageContent = document.querySelector('.page-content');
   if (!pageContent) {
     // Retry shortly if the page layout is still loading
-    setTimeout(mountHomeOverrideIfNeeded, 100);
+    setTimeout(mountPageOverridesIfNeeded, 100);
     return;
   }
 
   // Hide default elements
   pageContent.querySelectorAll(':scope > *').forEach(el => {
-    el.style.display = 'none';
+    if (el.id !== 'ax-home-override-root' && el.id !== 'ax-onlyoffice-override-root') {
+      el.style.display = 'none';
+    }
   });
 
-  const homeRoot = document.createElement('div');
-  homeRoot.id = 'ax-home-override-root';
-  pageContent.prepend(homeRoot);
-  createRoot(homeRoot).render(<React.StrictMode><HomeOverride /></React.StrictMode>);
-  console.log('[AxonAI One] Custom HomeOverride mounted ✓');
+  // Handle Home Mount
+  if (isHome) {
+    const onlyOfficeRoot = document.getElementById('ax-onlyoffice-override-root');
+    if (onlyOfficeRoot) onlyOfficeRoot.style.display = 'none';
+    
+    let homeRoot = document.getElementById('ax-home-override-root');
+    if (!homeRoot) {
+      homeRoot = document.createElement('div');
+      homeRoot.id = 'ax-home-override-root';
+      pageContent.prepend(homeRoot);
+      createRoot(homeRoot).render(<React.StrictMode><HomeOverride /></React.StrictMode>);
+      console.log('[AxonAI One] Custom HomeOverride mounted ✓');
+    } else {
+      homeRoot.style.display = '';
+    }
+  }
+
+  // Handle OnlyOffice Mount
+  if (isOnlyOffice) {
+    const homeRoot = document.getElementById('ax-home-override-root');
+    if (homeRoot) homeRoot.style.display = 'none';
+    
+    let onlyOfficeRoot = document.getElementById('ax-onlyoffice-override-root');
+    if (!onlyOfficeRoot) {
+      onlyOfficeRoot = document.createElement('div');
+      onlyOfficeRoot.id = 'ax-onlyoffice-override-root';
+      pageContent.prepend(onlyOfficeRoot);
+      createRoot(onlyOfficeRoot).render(<React.StrictMode><OnlyOfficeOverride /></React.StrictMode>);
+      console.log('[AxonAI One] OnlyOfficeOverride mounted ✓');
+    } else {
+      onlyOfficeRoot.style.display = '';
+    }
+  }
 }
 
 let _bootAttempts = 0;
@@ -197,7 +220,7 @@ function _tryReactBoot() {
     
     // Listen for route changes
     if (window.frappe && window.frappe.router) {
-      window.frappe.router.on('change', mountHomeOverrideIfNeeded);
+      window.frappe.router.on('change', mountPageOverridesIfNeeded);
     }
     
     // Poll for pathname changes (e.g. back from Vue SPA routes)
@@ -216,7 +239,7 @@ function _tryReactBoot() {
         } else {
           document.body.classList.remove('ax-route-mail');
         }
-        mountHomeOverrideIfNeeded();
+        mountPageOverridesIfNeeded();
       }
     }, 300);
 

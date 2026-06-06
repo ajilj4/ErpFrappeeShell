@@ -83,6 +83,7 @@ export const MODULE_SIDEBAR_KEYS = {
   automation: [],
   reports: [],
   files: [],
+  documents: [],
   calendar: [],
   calls: [],
   settings: ['organization'],
@@ -1352,6 +1353,25 @@ export const STATIC_NAVIGATION = {
             title: 'Storage',
             items: [
               { label: 'All Files', url: '/app/file' },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+
+  documents: {
+    label: 'Documents',
+    tabs: [
+      {
+        id: 'editor',
+        label: 'Documents',
+        url: '/app/documents',
+        groups: [
+          {
+            title: 'OnlyOffice',
+            items: [
+              { label: 'Document Editor', url: '/app/documents' },
             ],
           },
         ],
