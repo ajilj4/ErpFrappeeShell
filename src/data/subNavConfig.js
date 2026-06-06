@@ -755,56 +755,70 @@ export const STATIC_NAVIGATION = {
 
   // ═══════════════════════════════════════════════════════════════════════
   // CRM (ERPNext built-in module)
-  //
-  // Uses standard /app/* desk routes, NOT the standalone Frappe CRM at /crm.
-  // If standalone CRM is installed, its /crm/* routes are handled separately
-  // in resolveRoute() as a fallback.
   // ═══════════════════════════════════════════════════════════════════════
   crm: {
     label: 'CRM',
     tabs: [
       {
-        id: 'pipeline',
-        label: 'Pipeline',
+        id: 'home',
+        label: 'Home',
         url: '/app/lead',
         groups: [
           {
             title: 'Getting Started',
             items: [
               { label: 'Getting Started', url: '/app/crm' },
-            ],
-          },
-          {
-            title: 'Pipeline',
-            items: [
-              { label: 'Lead',        url: '/app/lead' },
-              { label: 'Opportunity',  url: '/app/opportunity' },
-              { label: 'Prospect',     url: '/app/prospect' },
-              { label: 'Quotation',    url: '/app/quotation' },
+              { label: 'Lead',            url: '/app/lead' },
+              { label: 'Opportunity',     url: '/app/opportunity' },
+              { label: 'Customer',        url: '/app/customer' },
             ],
           },
           {
             title: 'Reports',
             items: [
-              { label: 'Lead Details',       url: '/app/query-report/Lead%20Details' },
-              { label: 'Sales Funnel',       url: '/app/query-report/Sales%20Funnel' },
-              { label: 'Lost Opportunity',   url: '/app/query-report/Lost%20Opportunity' },
+              { label: 'Sales Analytics',                       url: '/app/query-report/Sales%20Analytics' },
+              { label: 'Lead Details',                          url: '/app/query-report/Lead%20Details' },
+              { label: 'Sales Pipeline Analytics',              url: '/app/query-report/Sales%20Pipeline%20Analytics' },
+              { label: 'Opportunity Summary by Sales Stage',    url: '/app/query-report/Opportunity%20Summary%20by%20Sales%20Stage' },
+              { label: 'Sales Funnel',                          url: '/app/query-report/Sales%20Funnel' },
+              { label: 'Prospects Engaged But Not Converted',   url: '/app/query-report/Prospects%20Engaged%20But%20Not%20Converted' },
+              { label: 'First Response Time for Opportunity',   url: '/app/query-report/First%20Response%20Time%20for%20Opportunity' },
+              { label: 'Campaign Efficiency',                   url: '/app/query-report/Campaign%20Efficiency' },
+              { label: 'Lead Owner Efficiency',                 url: '/app/query-report/Lead%20Owner%20Efficiency' },
             ],
           },
         ],
       },
       {
-        id: 'customers',
-        label: 'Customers',
-        url: '/app/customer',
+        id: 'maintenance',
+        label: 'Maintenance',
+        url: '/app/maintenance-schedule',
         groups: [
           {
-            title: 'People',
+            title: 'Maintenance',
             items: [
-              { label: 'Customer',  url: '/app/customer' },
-              { label: 'Contact',   url: '/app/contact' },
-              { label: 'Address',   url: '/app/address' },
-              { label: 'Supplier',  url: '/app/supplier' },
+              { label: 'Maintenance Schedule', url: '/app/maintenance-schedule' },
+              { label: 'Maintenance Visit',    url: '/app/maintenance-visit' },
+              { label: 'Warranty Claim',       url: '/app/warranty-claim' },
+            ],
+          },
+        ],
+      },
+      {
+        id: 'pipeline',
+        label: 'Sales Pipeline',
+        url: '/app/opportunity',
+        groups: [
+          {
+            title: 'Pipeline',
+            items: [
+              { label: 'Lead',          url: '/app/lead' },
+              { label: 'Opportunity',   url: '/app/opportunity' },
+              { label: 'Customer',      url: '/app/customer' },
+              { label: 'Contract',      url: '/app/contract' },
+              { label: 'Appointment',   url: '/app/appointment' },
+              { label: 'Communication', url: '/app/communication' },
+              { label: 'Campaign',      url: '/app/campaign' },
             ],
           },
         ],
@@ -815,21 +829,39 @@ export const STATIC_NAVIGATION = {
         url: '/app/campaign',
         groups: [
           {
-            title: 'Marketing',
+            title: 'Campaign',
             items: [
-              { label: 'Campaign',        url: '/app/campaign' },
-              { label: 'Email Campaign',  url: '/app/email-campaign' },
-              { label: 'Lead Source',      url: '/app/lead-source' },
-              { label: 'Communication',   url: '/app/communication' },
+              { label: 'Campaign',       url: '/app/campaign' },
+              { label: 'Email Campaign', url: '/app/email-campaign' },
+              { label: 'SMS Center',     url: '/app/sms-center' },
+              { label: 'SMS Log',        url: '/app/sms-log' },
+              { label: 'Email Group',    url: '/app/email-group' },
             ],
           },
+        ],
+      },
+      {
+        id: 'setup',
+        label: 'Setup',
+        url: '/app/crm-settings',
+        groups: [
           {
             title: 'Setup',
             items: [
-              { label: 'Sales Stage',        url: '/app/sales-stage' },
-              { label: 'Opportunity Type',   url: '/app/opportunity-type' },
-              { label: 'Market Segment',     url: '/app/market-segment' },
-              { label: 'Industry Type',      url: '/app/industry-type' },
+              { label: 'Territory',      url: '/app/territory' },
+              { label: 'Customer Group', url: '/app/customer-group' },
+              { label: 'Contact',        url: '/app/contact' },
+              { label: 'Prospect',       url: '/app/prospect' },
+              { label: 'Sales Person',   url: '/app/sales-person' },
+              { label: 'Sales Stage',    url: '/app/sales-stage' },
+              { label: 'Lead Source',    url: '/app/lead-source' },
+            ],
+          },
+          {
+            title: 'Settings',
+            items: [
+              { label: 'CRM Settings', url: '/app/crm-settings' },
+              { label: 'SMS Settings', url: '/app/sms-settings' },
             ],
           },
         ],

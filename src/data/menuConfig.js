@@ -17,7 +17,7 @@ export const MENU = [
   // ── ERP Suite ───────────────────────────────────────
   { id: 'erp',        label: 'ERP',         icon: Layers,       url: '/app/home',             section: null        },
   { id: 'crm',        label: 'CRM',         icon: Users,        url: '/app/lead',             section: null        },
-  { id: 'hrms',       label: 'HRMS',        icon: Briefcase,    url: '/desk/people',          section: null        },
+  { id: 'hrms',       label: 'HRMS',        icon: Briefcase,    url: '/app/hr-setup',         section: null        },
   { id: 'pos',        label: 'POS',         icon: ShoppingBag,  url: '/app/pos-invoice',      section: null        },
   { id: 'mail',       label: 'Mail',        icon: Mail,         url: '/mail',                 section: null, dividerAfter: true },
 

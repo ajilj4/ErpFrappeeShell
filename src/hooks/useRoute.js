@@ -2,11 +2,10 @@
  * useRoute.js
  * AxonAI One — 3-Level Routing Hook (v16 Fixed)
  *
- * Tracks the active module (Level 1) and active tab (Level 2) by watching:
- *  1. window.location on mount
- *  2. frappe.router 'change' events (Frappe SPA navigation)
- *  3. browser popstate (back/forward buttons)
- *  4. URL polling for external Vue SPAs (CRM/Mail)
+ * Frappe v16 CRITICAL: The desk now uses /desk/* paths (not /app/*).
+ * We normalize all /desk/* → /app/* internally so all our config and
+ * matching logic works consistently. Navigation items use /app/* URLs;
+ * frappe.set_route() handles the actual URL prefix.
  *
  * Uses routeStore (event-emitter) so ALL React roots share one state.
  */
@@ -16,11 +15,29 @@ import { NAVIGATION } from '../data/subNavConfig.js';
 import { routeStore } from '../stores/routeStore.js';
 
 // ═══════════════════════════════════════════════════════════════════
+// normalizePath — Convert /desk/* to /app/* for consistent matching
+// ═══════════════════════════════════════════════════════════════════
+
+export function normalizePath(rawPath) {
+  if (!rawPath) return '/app';
+  let path = rawPath.split('?')[0];
+  // Frappe v16 uses /desk/ prefix for desk routes
+  if (path === '/desk' || path === '/desk/') {
+    return '/app';
+  }
+  if (path.startsWith('/desk/')) {
+    return '/app/' + path.slice(6);
+  }
+  return path;
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // resolveRoute  —  pathname ➜ { moduleId, tabId }
 // ═══════════════════════════════════════════════════════════════════
 
 function resolveRoute(pathname) {
-  const path = pathname.split('?')[0];
+  // Normalize: /desk/* → /app/* so all matching uses consistent /app/ prefix
+  const path = normalizePath(pathname);
 
   // ── 0. External Vue SPA routes ──────────────────────────────────
   // CRM standalone SPA (if installed) at /crm
@@ -52,8 +69,21 @@ function resolveRoute(pathname) {
   }
   if (path.startsWith('/app/campaign') || path.startsWith('/app/email-campaign') ||
       path.startsWith('/app/lead-source') || path.startsWith('/app/sales-stage') ||
-      path.startsWith('/app/market-segment') || path.startsWith('/app/industry-type')) {
+      path.startsWith('/app/market-segment') || path.startsWith('/app/industry-type') ||
+      path.startsWith('/app/sms-center') || path.startsWith('/app/sms-log') ||
+      path.startsWith('/app/email-group') || path.startsWith('/app/sms-settings')) {
     return { moduleId: 'crm', tabId: 'campaigns' };
+  }
+  if (path.startsWith('/app/maintenance-schedule') || path.startsWith('/app/maintenance-visit') ||
+      path.startsWith('/app/warranty-claim')) {
+    return { moduleId: 'crm', tabId: 'maintenance' };
+  }
+  if (path.startsWith('/app/contract') || path.startsWith('/app/appointment')) {
+    return { moduleId: 'crm', tabId: 'pipeline' };
+  }
+  if (path.startsWith('/app/crm-settings') || path.startsWith('/app/territory') ||
+      path.startsWith('/app/sales-person')) {
+    return { moduleId: 'crm', tabId: 'setup' };
   }
   if (path === '/app/crm' || path === '/app/crm/') {
     return { moduleId: 'crm', tabId: 'pipeline' };
@@ -68,7 +98,7 @@ function resolveRoute(pathname) {
           for (const item of group.items) {
             const itemPath = item.url.split('?')[0];
             // Exact match or sub-page match (like /app/sales-order/SO-0001)
-            if (path === itemPath || (path.startsWith(itemPath + '/') && itemPath !== '/app/')) {
+            if (path === itemPath || (path.startsWith(itemPath + '/') && itemPath !== '/app/' && itemPath !== '/app')) {
               return { moduleId, tabId: tab.id };
             }
           }
@@ -76,7 +106,7 @@ function resolveRoute(pathname) {
       }
       // Match the tab's own URL
       const tabPath = tab.url.split('?')[0];
-      if (path === tabPath || (path.startsWith(tabPath + '/') && tabPath !== '/app/')) {
+      if (path === tabPath || (path.startsWith(tabPath + '/') && tabPath !== '/app/' && tabPath !== '/app')) {
         return { moduleId, tabId: tab.id };
       }
     }
@@ -213,6 +243,18 @@ function resolveRoute(pathname) {
       path.startsWith('/app/employee-promotion') || path.startsWith('/app/employee-transfer')) {
     return { moduleId: 'hrms', tabId: 'tenure' };
   }
+  // HRMS: /app/people (HRMS app_home)
+  if (path === '/app/people' || path.startsWith('/app/people/')) {
+    return { moduleId: 'hrms', tabId: 'hr_setup' };
+  }
+  // HRMS: workspace pages
+  if (path === '/app/hr-setup' || path === '/app/expenses' || path === '/app/leaves' ||
+      path === '/app/payroll' || path === '/app/performance' || path === '/app/recruitment' ||
+      path === '/app/shift--attendance' || path === '/app/tax--benefits' || path === '/app/tenure') {
+    const slug = path.replace('/app/', '');
+    const tabId = slug.replace(/-/g, '_').replace(/__/g, '_and_');
+    return { moduleId: 'hrms', tabId };
+  }
   // HRMS generic employee / org routes → hr_setup tab
   if (path.startsWith('/app/employee') || path.startsWith('/app/department') ||
       path.startsWith('/app/designation') || path.startsWith('/app/hr-settings') ||
@@ -254,35 +296,9 @@ function resolveRoute(pathname) {
     return { moduleId: 'erp', tabId: 'organization' };
   }
 
-  // ── 5. Frappe v16 /desk/* routes ────────────────────────────────
-  // In Frappe v16, /desk or /desk/ is the default homepage.
-  // /desk/people is the HRMS app_home.
-  // We ONLY map specific /desk/* paths to HRMS — NOT the generic /desk root.
-  if (path === '/desk/people' || path.startsWith('/desk/people/')) {
-    return { moduleId: 'hrms', tabId: 'hr_setup' };
-  }
-  // /desk or /desk/ → ERP home (same as /app/home)
-  if (path === '/desk' || path === '/desk/') {
-    return { moduleId: 'erp', tabId: 'organization' };
-  }
-  // Other /desk/* workspace routes — try to guess from the slug
-  if (path.startsWith('/desk/')) {
-    const slug = path.replace('/desk/', '').split('/')[0].toLowerCase();
-    // Map known HRMS workspace slugs
-    const hrmsWorkspaceSlugs = [
-      'hr-setup', 'expenses', 'leaves', 'payroll', 'performance',
-      'recruitment', 'shift--attendance', 'tax--benefits', 'tenure',
-    ];
-    if (hrmsWorkspaceSlugs.includes(slug)) {
-      const tabId = slug.replace(/-/g, '_').replace(/__/g, '_and_');
-      return { moduleId: 'hrms', tabId };
-    }
-    // Default: treat unknown /desk/* as ERP
-    return { moduleId: 'erp', tabId: null };
-  }
-
   // ── Default catch-all ───────────────────────────────────────────
-  return { moduleId: 'erp', tabId: null };
+  // Always return a valid tabId so SubNav doesn't hide
+  return { moduleId: 'erp', tabId: 'organization' };
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -353,10 +369,7 @@ export function useRoute() {
    *  1. External Vue SPAs (/crm/*, /mail/*):
    *     window.location.href for same-tab full-page navigation.
    *
-   *  2. Frappe desk direct paths (/desk/*):
-   *     window.location.href rather than frappe.set_route().
-   *
-   *  3. Standard Frappe desk routes (/app/*):
+   *  2. Standard Frappe desk routes (/app/* or /desk/*):
    *     frappe.set_route() for SPA navigation without a full page reload.
    */
   const navigate = useCallback((url) => {
@@ -367,8 +380,8 @@ export function useRoute() {
       return;
     }
 
-    // ── External Vue SPAs and /desk/* routes ─────────────────
-    const EXTERNAL_PREFIXES = ['/crm', '/mail', '/desk'];
+    // ── External Vue SPAs only (/crm, /mail) ─────────────────
+    const EXTERNAL_PREFIXES = ['/crm', '/mail'];
     const isExternalRoute = EXTERNAL_PREFIXES.some(
       (prefix) => url === prefix || url.startsWith(prefix + '/')
     );
@@ -385,9 +398,10 @@ export function useRoute() {
       return;
     }
 
-    // ── Standard Frappe desk /app/* routes ────────────────────
+    // ── Standard Frappe desk /app/* or /desk/* routes ─────────
     if (window.frappe && window.frappe.set_route) {
-      const cleanUrl = url.replace(/^\/app\//, '');
+      // Strip /app/ or /desk/ prefix — frappe.set_route wants just the slug
+      const cleanUrl = url.replace(/^\/(app|desk)\//, '');
       const parts = cleanUrl.split('?');
       const routePart = parts[0];
       const queryPart = parts[1];

@@ -13,7 +13,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronDown, ChevronRight, ArrowLeft } from 'lucide-react';
 import { buildModuleTabs, STATIC_NAVIGATION } from '../../data/subNavConfig.js';
-import { useRoute } from '../../hooks/useRoute.js';
+import { useRoute, normalizePath } from '../../hooks/useRoute.js';
 
 // ── SubNavGroup ────────────────────────────────────────────────────────────
 
@@ -21,7 +21,7 @@ function SubNavGroup({ group, onNavigate }) {
   const [expanded, setExpanded] = useState(true);
 
   const hasActive = group.items.some((item) =>
-    window.location.pathname.startsWith(item.url.split('?')[0])
+    normalizePath(window.location.pathname).startsWith(item.url.split('?')[0])
   );
 
   return (
@@ -42,7 +42,7 @@ function SubNavGroup({ group, onNavigate }) {
       {expanded && (
         <ul className="ax-subnav-items" role="list">
           {group.items.map((item) => {
-            const currentPath = window.location.pathname;
+            const currentPath = normalizePath(window.location.pathname);
             const urlBase = item.url.split('?')[0];
             const isActive = urlBase !== '/' && urlBase !== '/app' && urlBase !== '/crm' && urlBase !== '/mail' && (
               currentPath === urlBase ||
