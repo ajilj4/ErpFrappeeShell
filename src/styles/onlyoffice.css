@@ -1,55 +1,188 @@
-/* onlyoffice.css */
+/* ─── OnlyOffice Module Styles ─────────────────────────────────────────────
+   Layout strategy:
+   - DO NOT use position:absolute (anchors to .main-section and covers sidebars)
+   - Use normal block flow + height calculation so it sits INSIDE the content area
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* Root wrapper — fills the page-content area naturally */
 #ax-onlyoffice-override {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
   display: flex;
   flex-direction: column;
-  background-color: var(--ax-bg-main);
-  z-index: 10;
-  padding: 1.5rem;
+  /* Full available viewport height minus top bars and keyboard bar */
+  height: calc(100vh - var(--ax-topbar-height, 64px) - var(--ax-modulenav-height, 48px) - var(--ax-keyboard-height, 36px));
+  width: 100%;
+  background-color: var(--ax-page-bg, #F8F9FC);
   box-sizing: border-box;
-}
-
-.ax-onlyoffice-header {
-  margin-bottom: 1rem;
-}
-
-.ax-onlyoffice-header h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--ax-text-main);
-}
-
-.ax-onlyoffice-error {
-  background-color: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 8px;
-  padding: 1.5rem;
-  color: var(--ax-text-main);
-}
-
-.ax-onlyoffice-help {
-  margin-top: 1rem;
-  font-size: 0.9rem;
-  color: var(--ax-text-muted);
-}
-
-.ax-onlyoffice-container {
-  flex: 1;
-  border-radius: 8px;
   overflow: hidden;
-  background-color: var(--ax-bg-surface);
-  box-shadow: var(--ax-shadow-sm);
+}
+
+/* ─── Landing / Dashboard ──────────────────────────────────────────────── */
+.ax-doc-home {
+  flex: 1;
+  padding: 2rem 2.5rem;
+  overflow-y: auto;
+}
+
+.ax-doc-home-header {
+  margin-bottom: 2.5rem;
+}
+
+.ax-doc-home-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--ax-text-primary, #111827);
+  margin: 0 0 0.4rem;
+}
+
+.ax-doc-home-header p {
+  font-size: 0.95rem;
+  color: var(--ax-text-secondary, #6B7280);
+  margin: 0;
+}
+
+.ax-doc-section {
+  margin-bottom: 2.5rem;
+}
+
+.ax-doc-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ax-text-secondary, #6B7280);
+  margin: 0 0 1rem;
+}
+
+/* Create New grid */
+.ax-doc-create-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.ax-doc-create-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem 1rem;
+  background: #fff;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: inherit;
+}
+
+.ax-doc-create-card:hover {
+  border-color: var(--card-color, #4F46E5);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  transform: translateY(-2px);
+}
+
+.ax-doc-create-icon {
+  font-size: 2rem;
+}
+
+.ax-doc-create-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ax-text-primary, #111827);
+}
+
+.ax-doc-create-ext {
+  font-size: 0.72rem;
+  color: var(--ax-text-secondary, #6B7280);
+  font-family: monospace;
+}
+
+/* ─── Editor view ──────────────────────────────────────────────────────── */
+.ax-doc-editor-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ax-doc-editor-topbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 1.2rem;
+  background: #fff;
+  border-bottom: 1px solid #E5E7EB;
+  flex-shrink: 0;
+}
+
+.ax-doc-back-btn {
+  background: none;
+  border: none;
+  font-size: 0.85rem;
+  color: var(--ax-primary, #4F46E5);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+
+.ax-doc-back-btn:hover {
+  background: #EEF2FF;
+}
+
+.ax-doc-filename {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ax-text-primary, #111827);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* iframe wrapper — fills remaining height */
+.ax-doc-iframe-wrap {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  background: #fff;
+}
+
+.ax-doc-iframe-wrap #onlyoffice-editor {
+  position: absolute;
+  inset: 0;
+}
+
+/* ─── Shared states ────────────────────────────────────────────────────── */
+.ax-onlyoffice-loading {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 0.95rem;
+  color: var(--ax-text-secondary, #6B7280);
 }
 
-.ax-onlyoffice-loading {
-  color: var(--ax-text-muted);
-  font-size: 1rem;
+.ax-onlyoffice-error {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  padding: 1.25rem 1.5rem;
+  color: var(--ax-text-primary, #111827);
+  font-size: 0.9rem;
+}
+
+.ax-onlyoffice-help {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--ax-text-secondary, #6B7280);
+  line-height: 1.6;
+}
+
+.ax-onlyoffice-help code {
+  background: rgba(0,0,0,0.05);
+  border-radius: 3px;
+  padding: 0.1em 0.3em;
+  font-size: 0.85em;
 }

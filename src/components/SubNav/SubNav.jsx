@@ -108,6 +108,37 @@ export default function SubNav() {
   const groups = activeTabConfig?.groups || [];
   const hasSubNav = groups.length > 0;
 
+  // ── Fetch Recent Files for Documents Module ──────────────────────────
+  const [recentFiles, setRecentFiles] = useState([]);
+  useEffect(() => {
+    if (activeModule === 'documents' && window.frappe && window.frappe.call) {
+      window.frappe.call({
+        method: 'axonai_ui.onlyoffice.get_recent_documents',
+        callback: (r) => {
+          if (r.message) {
+            setRecentFiles(r.message);
+          }
+        }
+      });
+    }
+  }, [activeModule]);
+
+  // Inject recent files into the static configuration
+  const finalGroups = useMemo(() => {
+    if (activeModule === 'documents' && recentFiles.length > 0) {
+      const mappedGroups = JSON.parse(JSON.stringify(groups));
+      const recentGroup = mappedGroups.find((g) => g.title === 'Recent Files');
+      if (recentGroup) {
+        recentGroup.items = recentFiles.map((f) => ({
+          label: f.file_name,
+          url: `/app/documents?file_name=${encodeURIComponent(f.file_name)}&file_url=${encodeURIComponent(f.file_url)}`
+        }));
+      }
+      return mappedGroups;
+    }
+    return groups;
+  }, [groups, activeModule, recentFiles]);
+
   useEffect(() => {
     document.body.classList.toggle('ax-has-subnav', hasSubNav);
     return () => {
@@ -133,7 +164,7 @@ export default function SubNav() {
 
       {/* Scrollable group list */}
       <div className="ax-subnav-body">
-        {groups.map((group, idx) => (
+        {finalGroups.map((group, idx) => (
           <SubNavGroup
             key={group.title || idx}
             group={group}

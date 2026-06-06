@@ -215,6 +215,11 @@ function _tryReactBoot() {
     } else {
       document.body.classList.remove('ax-route-mail');
     }
+    if (path.startsWith('/app/documents') || path.startsWith('/app/onlyoffice')) {
+      document.body.classList.add('ax-route-documents');
+    } else {
+      document.body.classList.remove('ax-route-documents');
+    }
 
     mountAxonAI();
     
@@ -238,6 +243,11 @@ function _tryReactBoot() {
           document.body.classList.add('ax-route-mail');
         } else {
           document.body.classList.remove('ax-route-mail');
+        }
+        if (current.startsWith('/app/documents') || current.startsWith('/app/onlyoffice')) {
+          document.body.classList.add('ax-route-documents');
+        } else {
+          document.body.classList.remove('ax-route-documents');
         }
         mountPageOverridesIfNeeded();
       }

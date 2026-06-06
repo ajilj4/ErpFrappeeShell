@@ -763,7 +763,7 @@ export const STATIC_NAVIGATION = {
       {
         id: 'home',
         label: 'Home',
-        url: '/app/lead',
+        url: '/desk/crm',
         groups: [
           {
             title: 'Getting Started',
@@ -1369,9 +1369,18 @@ export const STATIC_NAVIGATION = {
         url: '/app/documents',
         groups: [
           {
-            title: 'OnlyOffice',
+            title: 'Create New',
             items: [
-              { label: 'Document Editor', url: '/app/documents' },
+              { label: 'Document', url: '/app/documents/new?type=word' },
+              { label: 'Spreadsheet', url: '/app/documents/new?type=cell' },
+              { label: 'Presentation', url: '/app/documents/new?type=slide' },
+              { label: 'PDF Form', url: '/app/documents/new?type=pdf' },
+            ],
+          },
+          {
+            title: 'Recent Files',
+            items: [
+              // This will be dynamically populated in SubNav.jsx
             ],
           },
         ],

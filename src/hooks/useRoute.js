@@ -85,8 +85,8 @@ function resolveRoute(pathname) {
       path.startsWith('/app/sales-person')) {
     return { moduleId: 'crm', tabId: 'setup' };
   }
-  if (path === '/app/crm' || path === '/app/crm/') {
-    return { moduleId: 'crm', tabId: 'pipeline' };
+  if (path === '/app/crm' || path === '/app/crm/' || path === '/desk/crm' || path === '/desk/crm/') {
+    return { moduleId: 'crm', tabId: 'home' };
   }
 
   // ── 1. Walk through all modules in NAVIGATION to find a Level 3 item URL match
@@ -404,7 +404,7 @@ export function useRoute() {
     // ── Internal React SPA Routes (bypass Frappe router) ──────
     const INTERNAL_REACT_PREFIXES = ['/app/documents', '/app/onlyoffice'];
     const isInternalReactRoute = INTERNAL_REACT_PREFIXES.some(
-      (prefix) => url === prefix || url.startsWith(prefix + '/')
+      (prefix) => url === prefix || url.startsWith(prefix + '/') || url.startsWith(prefix + '?')
     );
 
     if (isInternalReactRoute) {
@@ -423,13 +423,24 @@ export function useRoute() {
       if (typeof window.__axonai_mount_overrides === 'function') {
         window.__axonai_mount_overrides();
       }
+      
+      // Notify components that rely on URL params
+      window.dispatchEvent(new Event('ax-route-changed'));
+      
       return;
     }
 
     // ── Standard Frappe desk /app/* or /desk/* routes ─────────
     if (window.frappe && window.frappe.set_route) {
       // Strip /app/ or /desk/ prefix — frappe.set_route wants just the slug
-      const cleanUrl = url.replace(/^\/(app|desk)\//, '');
+      // Optimized string slicing (O(1)) instead of regex replace for better time complexity
+      let cleanUrl = url;
+      if (cleanUrl.startsWith('/app/')) {
+        cleanUrl = cleanUrl.slice(5);
+      } else if (cleanUrl.startsWith('/desk/')) {
+        cleanUrl = cleanUrl.slice(6);
+      }
+      
       const parts = cleanUrl.split('?');
       const routePart = parts[0];
       const queryPart = parts[1];

@@ -371,3 +371,26 @@ body.ax-route-crm div.flex.border-b.pr-5 {
 body.ax-route-mail div.relative.block.min-h-0.flex-shrink-0 {
   display: none !important;
 }
+
+/* ── STEP 18: OnlyOffice Documents route layout ─────────────────────── */
+/* Remove Frappe page padding/scrolling so the editor fills exactly     */
+/* the remaining space without double-scrollbars or gaps.                */
+body.ax-route-documents .page-container,
+body.ax-route-documents #body {
+  padding-bottom: 0 !important;
+  overflow: hidden !important;
+  height: 100%;
+}
+
+body.ax-route-documents .layout-main-section-wrapper,
+body.ax-route-documents .layout-main.row,
+body.ax-route-documents .page-wrapper,
+body.ax-route-documents .page-content {
+  height: 100%;
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+
+body.ax-route-documents .page-head {
+  display: none !important;
+}
