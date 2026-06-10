@@ -49,6 +49,17 @@ import './styles/onlyoffice.css';
 function mountAxonAI() {
   if (document.getElementById('axonai-sidebar-root')) return;
 
+  // Intercept Frappe page routing to prevent "Page not found" errors for custom routes
+  if (typeof window.frappe !== 'undefined' && window.frappe.views && window.frappe.views.pageview) {
+    const originalShow = window.frappe.views.pageview.show;
+    window.frappe.views.pageview.show = function (name) {
+      if (name === 'documents' || name === 'onlyoffice') {
+        return;
+      }
+      return originalShow.apply(this, arguments);
+    };
+  }
+
   const mainSection = document.querySelector('.main-section');
   if (!mainSection) return;
 

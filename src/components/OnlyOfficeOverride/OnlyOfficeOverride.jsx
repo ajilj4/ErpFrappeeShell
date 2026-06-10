@@ -69,9 +69,6 @@ const CREATE_OPTIONS = [
 function DocumentsHome({ onCreateNew, onOpenFile }) {
   const [recentFiles, setRecentFiles] = useState([]);
   const [recentLoading, setRecentLoading] = useState(true);
-  const [renameTarget, setRenameTarget] = useState(null); // { file_name, file_url, name }
-  const [renameValue, setRenameValue] = useState('');
-  const [renameError, setRenameError] = useState('');
 
   const loadRecent = useCallback(() => {
     if (!window.frappe?.call) return;
@@ -88,33 +85,44 @@ function DocumentsHome({ onCreateNew, onOpenFile }) {
 
   useEffect(() => { loadRecent(); }, [loadRecent]);
 
-  const startRename = (file) => {
-    // Strip extension for editing
+  const handleRenameClick = (file) => {
     const baseName = file.file_name.replace(/\.[^.]+$/, '');
-    setRenameTarget(file);
-    setRenameValue(baseName);
-    setRenameError('');
-  };
-
-  const submitRename = () => {
-    if (!renameValue.trim()) { setRenameError('Name cannot be empty.'); return; }
+    const newName = prompt("Rename Document", baseName);
+    if (newName === null) return; // Cancelled
+    if (!newName.trim()) { alert("Name cannot be empty."); return; }
+    
     window.frappe.call({
       method: 'axonai_ui.onlyoffice.rename_document',
-      args: { file_name: renameTarget.file_name, new_title: renameValue.trim() },
+      args: { file_name: file.file_name, new_title: newName.trim() },
       callback: (r) => {
         if (r.message) {
           setRecentFiles(prev =>
-            prev.map(f => f.file_name === renameTarget.file_name
+            prev.map(f => f.file_name === file.file_name
               ? { ...f, file_name: r.message.file_name, file_url: r.message.file_url }
               : f
             )
           );
         }
-        setRenameTarget(null);
       },
       error: (err) => {
-        setRenameError(err?.message || 'Rename failed. Check console for details.');
+        alert(err?.message || 'Rename failed.');
       },
+    });
+  };
+
+  const handleDeleteClick = (file) => {
+    const confirmDelete = confirm(`Are you sure you want to delete "${file.file_name}" permanently?`);
+    if (!confirmDelete) return;
+
+    window.frappe.call({
+      method: 'axonai_ui.onlyoffice.delete_document',
+      args: { file_name: file.file_name },
+      callback: () => {
+        setRecentFiles(prev => prev.filter(f => f.file_name !== file.file_name));
+      },
+      error: (err) => {
+        alert(err?.message || 'Delete failed.');
+      }
     });
   };
 
@@ -161,37 +169,23 @@ function DocumentsHome({ onCreateNew, onOpenFile }) {
                   <span className="ax-doc-recent-name">{file.file_name}</span>
                   <span className="ax-doc-recent-date">{formatDate(file.modified)}</span>
                 </button>
-                <button
-                  className="ax-doc-recent-rename-btn"
-                  title="Rename"
-                  onClick={() => startRename(file)}
-                >✏️</button>
+                <div className="ax-doc-recent-actions">
+                  <button
+                    className="ax-doc-recent-action-btn rename"
+                    title="Rename"
+                    onClick={() => handleRenameClick(file)}
+                  >✏️</button>
+                  <button
+                    className="ax-doc-recent-action-btn delete"
+                    title="Delete"
+                    onClick={() => handleDeleteClick(file)}
+                  >🗑️</button>
+                </div>
               </li>
             ))}
           </ul>
         )}
       </section>
-
-      {/* Rename modal */}
-      {renameTarget && (
-        <div className="ax-doc-modal-overlay" onClick={() => setRenameTarget(null)}>
-          <div className="ax-doc-modal" onClick={e => e.stopPropagation()}>
-            <h3>Rename Document</h3>
-            <input
-              className="ax-doc-modal-input"
-              value={renameValue}
-              onChange={e => { setRenameValue(e.target.value); setRenameError(''); }}
-              onKeyDown={e => { if (e.key === 'Enter') submitRename(); if (e.key === 'Escape') setRenameTarget(null); }}
-              autoFocus
-            />
-            {renameError && <p className="ax-doc-modal-error">{renameError}</p>}
-            <div className="ax-doc-modal-actions">
-              <button className="ax-doc-modal-cancel" onClick={() => setRenameTarget(null)}>Cancel</button>
-              <button className="ax-doc-modal-save" onClick={submitRename}>Save</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -215,6 +209,26 @@ function DocumentEditor({ fileUrl, fileName, fileKey, fileType, fileId, onRename
     }
     prevStatusRef.current = saveStatus;
   }, [saveStatus]);
+
+  const executeDelete = () => {
+    const confirmDelete = confirm(`Are you sure you want to delete "${fileName}" permanently?`);
+    if (!confirmDelete) return;
+
+    window.frappe.call({
+      method: 'axonai_ui.onlyoffice.delete_document',
+      args: { file_name: fileName },
+      callback: () => {
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          window.location.href = '/app/documents';
+        }
+      },
+      error: (err) => {
+        alert(err?.message || 'Delete failed.');
+      }
+    });
+  };
 
   // Load OnlyOffice API script once
   useEffect(() => {
@@ -343,6 +357,15 @@ function DocumentEditor({ fileUrl, fileName, fileKey, fileType, fileId, onRename
             ref={containerRef}
             style={{ width: '100%', height: '100%', opacity: ready ? 1 : 0 }}
           />
+          {ready && (
+            <button
+              className="ax-doc-editor-delete-btn"
+              title="Delete Document"
+              onClick={executeDelete}
+            >
+              🗑️ Delete
+            </button>
+          )}
           {saveStatus === 'modified' && (
             <div className="ax-save-status-pill saving">
               <span className="ax-save-status-dot pulse" /> Saving changes...

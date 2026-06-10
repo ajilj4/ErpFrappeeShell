@@ -55,6 +55,7 @@ function SubNavGroup({ group, onNavigate }) {
                   className={`ax-subnav-item${isActive ? ' ax-subnav-item--active' : ''}`}
                   onClick={(e) => {
                     e.preventDefault();
+                    e.stopPropagation();
                     onNavigate(item.url);
                     document.body.classList.remove('ax-mobile-sidebar-open');
                   }}

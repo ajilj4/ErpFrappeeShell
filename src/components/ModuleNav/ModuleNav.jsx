@@ -34,6 +34,7 @@ export default function ModuleNav() {
 
   const handleClick = (e, tab) => {
     e.preventDefault();
+    e.stopPropagation();
     navigate(tab.url);
   };
 
